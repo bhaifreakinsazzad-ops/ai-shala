@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { toolsApi } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LanguageContext'
 import { Link } from 'react-router-dom'
 import { Wrench, Play, Copy, Lock, ChevronRight } from 'lucide-react'
 import { cn, copyToClipboard } from '@/lib/utils'
@@ -21,6 +22,7 @@ const PLATFORM_OPTIONS = ['Facebook', 'Instagram', 'LinkedIn', 'Twitter/X', 'You
 
 export default function ToolsPage() {
   const { user, refreshUser } = useAuth()
+  const { t, lang } = useLang()
   const [tools, setTools] = useState<Tool[]>([])
   const [activeTool, setActiveTool] = useState<Tool | null>(null)
   const [input, setInput] = useState('')
@@ -131,7 +133,7 @@ export default function ToolsPage() {
       <div className="hidden md:flex flex-col w-64 xl:w-72 border-r border-green-900/20 glass overflow-hidden">
         <div className="p-3 border-b border-green-900/20">
           <h2 className="text-sm font-bold text-green-400 flex items-center gap-2">
-            <Wrench size={16} /> AI টুলস
+            <Wrench size={16} /> {t.toolsTitle}
           </h2>
         </div>
         {/* Category filter */}
@@ -158,7 +160,7 @@ export default function ToolsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className={cn('text-sm font-medium truncate', activeTool?.id === tool.id ? 'text-green-300' : 'text-gray-300')}>
-                    {tool.name}
+                    {lang === 'en' && tool.nameEn ? tool.nameEn : tool.name}
                   </span>
                   {!tool.free && <Lock size={10} className="text-yellow-500 shrink-0" />}
                 </div>
@@ -175,7 +177,7 @@ export default function ToolsPage() {
           <div className="flex-1 flex items-center justify-center text-center p-8">
             <div>
               <div className="text-6xl mb-4">🛠️</div>
-              <h2 className="text-xl font-bold text-green-400 mb-2">AI টুলস</h2>
+              <h2 className="text-xl font-bold text-green-400 mb-2">{t.toolsTitle}</h2>
               <p className="text-gray-500 text-sm max-w-xs">বাম পাশ থেকে একটি টুল বেছে নিন</p>
               {/* Mobile tool grid */}
               <div className="grid grid-cols-3 gap-3 mt-6 md:hidden">
@@ -183,7 +185,7 @@ export default function ToolsPage() {
                   <button key={tool.id} onClick={() => selectTool(tool)}
                     className="glass-light rounded-xl p-3 flex flex-col items-center gap-1 border border-green-900/20">
                     <span className="text-2xl">{tool.icon}</span>
-                    <span className="text-xs text-gray-400">{tool.name}</span>
+                    <span className="text-xs text-gray-400">{lang === 'en' && tool.nameEn ? tool.nameEn : tool.name}</span>
                   </button>
                 ))}
               </div>
@@ -196,7 +198,7 @@ export default function ToolsPage() {
               <div className="flex items-center gap-3">
                 <span className="text-4xl">{activeTool.icon}</span>
                 <div>
-                  <h2 className="text-xl font-bold text-white">{activeTool.name}</h2>
+                  <h2 className="text-xl font-bold text-white">{lang === 'en' && activeTool.nameEn ? activeTool.nameEn : activeTool.name}</h2>
                   <p className="text-gray-500 text-sm">{activeTool.description}</p>
                 </div>
                 {!activeTool.free && (

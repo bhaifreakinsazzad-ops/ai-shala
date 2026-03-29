@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { imageApi } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LanguageContext'
 import { Link } from 'react-router-dom'
 import { Sparkles, Download, RefreshCw, ZoomIn, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -33,6 +34,7 @@ const EXAMPLE_PROMPTS = [
 
 export default function ImagePage() {
   const { user, refreshUser } = useAuth()
+  const { t } = useLang()
   const [prompt, setPrompt] = useState('')
   const [style, setStyle] = useState('realistic')
   const [size, setSize] = useState(SIZES[0])
@@ -84,7 +86,7 @@ export default function ImagePage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <Sparkles className="text-green-400" size={24} />
-            AI ছবি তৈরি
+            {t.imageTitle}
           </h1>
           <p className="text-gray-500 text-sm mt-1">Pollinations.ai দিয়ে সম্পূর্ণ বিনামূল্যে ছবি তৈরি করুন</p>
         </div>
@@ -111,13 +113,13 @@ export default function ImagePage() {
           <div className="space-y-5">
             {/* Prompt */}
             <div>
-              <label className="block text-sm text-gray-400 mb-2">ছবির বিবরণ লিখুন</label>
+              <label className="block text-sm text-gray-400 mb-2">{t.imageTitle}</label>
               <textarea
                 value={prompt}
                 onChange={e => setPrompt(e.target.value)}
                 rows={3}
                 className="w-full bg-black/50 border border-green-900/30 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/40 resize-none transition-colors"
-                placeholder="বাংলায় বা English এ ছবির বিবরণ দিন..."
+                placeholder={t.imagePlaceholder}
               />
               {/* Example prompts */}
               <div className="flex flex-wrap gap-2 mt-2">
@@ -135,7 +137,7 @@ export default function ImagePage() {
 
             {/* Style */}
             <div>
-              <label className="block text-sm text-gray-400 mb-2">স্টাইল</label>
+              <label className="block text-sm text-gray-400 mb-2">{t.imageStyleLabel}</label>
               <div className="grid grid-cols-4 gap-2">
                 {STYLES.map(s => (
                   <button
@@ -157,7 +159,7 @@ export default function ImagePage() {
 
             {/* Size */}
             <div>
-              <label className="block text-sm text-gray-400 mb-2">সাইজ</label>
+              <label className="block text-sm text-gray-400 mb-2">{t.imageSizeLabel}</label>
               <div className="flex gap-2">
                 {SIZES.map(s => (
                   <button
@@ -184,11 +186,11 @@ export default function ImagePage() {
               className="btn-green w-full py-3 flex items-center justify-center gap-2 disabled:opacity-40"
             >
               {generating ? (
-                <><RefreshCw size={18} className="animate-spin" /> তৈরি হচ্ছে...</>
+                <><RefreshCw size={18} className="animate-spin" /> {t.imageGenerating}</>
               ) : !canGenerate ? (
                 <><Lock size={18} /> দৈনিক সীমা শেষ</>
               ) : (
-                <><Sparkles size={18} /> ছবি তৈরি করুন</>
+                <><Sparkles size={18} /> {t.imageGenerateBtn}</>
               )}
             </button>
           </div>

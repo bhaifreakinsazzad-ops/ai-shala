@@ -1,30 +1,36 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LanguageContext'
 import { useState } from 'react'
 import {
   MessageSquare, Image, Wrench, CreditCard, LayoutDashboard,
-  LogOut, Settings, ChevronLeft, ChevronRight, Shield, Menu, X
+  LogOut, ChevronLeft, ChevronRight, Shield, Menu
 } from 'lucide-react'
 import { cn, getSubscriptionBadge } from '@/lib/utils'
 
-const navItems = [
-  { to: '/chat', icon: MessageSquare, label: 'AI চ্যাট', labelEn: 'Chat' },
-  { to: '/image', icon: Image, label: 'ছবি তৈরি', labelEn: 'Image Gen' },
-  { to: '/tools', icon: Wrench, label: 'AI টুলস', labelEn: 'Tools' },
-  { to: '/dashboard', icon: LayoutDashboard, label: 'ড্যাশবোর্ড', labelEn: 'Dashboard' },
-  { to: '/payment', icon: CreditCard, label: 'সাবস্ক্রিপশন', labelEn: 'Upgrade' },
-]
-
 export default function Layout() {
   const { user, logout } = useAuth()
+  const { t, lang, toggle } = useLang()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const navItems = [
+    { to: '/chat', icon: MessageSquare, label: t.sidebarChat },
+    { to: '/image', icon: Image, label: t.sidebarImage },
+    { to: '/tools', icon: Wrench, label: t.sidebarTools },
+    { to: '/dashboard', icon: LayoutDashboard, label: t.sidebarDashboard },
+    { to: '/payment', icon: CreditCard, label: t.sidebarPayment },
+  ]
 
   const handleLogout = () => {
     logout()
     navigate('/')
   }
+
+  const subLabel = user?.subscription === 'free' ? t.subFree
+    : user?.subscription === 'pro' ? t.subPro
+    : t.subPremium
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -33,7 +39,7 @@ export default function Layout() {
         <span className="text-2xl">🤖</span>
         {!collapsed && (
           <div>
-            <h1 className="font-bold text-green-400 text-lg leading-none font-mono">AI শালা</h1>
+            <h1 className="font-bold text-green-400 text-lg leading-none font-mono">{t.brand}</h1>
             <p className="text-xs text-gray-500 mt-0.5">v3.0</p>
           </div>
         )}
@@ -72,22 +78,33 @@ export default function Layout() {
             )}
           >
             <Shield size={18} className="shrink-0" />
-            {!collapsed && <span className="text-sm font-medium">অ্যাডমিন</span>}
+            {!collapsed && <span className="text-sm font-medium">{t.sidebarAdmin}</span>}
           </NavLink>
         )}
       </nav>
 
-      {/* User info */}
-      <div className="p-3 border-t border-green-900/30">
+      {/* User info + Language Toggle */}
+      <div className="p-3 border-t border-green-900/30 space-y-1">
+        {/* Language toggle */}
         {!collapsed && (
-          <div className="flex items-center gap-2 px-3 py-2 mb-2">
+          <button
+            onClick={toggle}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-gray-400 hover:text-green-400 hover:bg-white/5 transition-all text-sm"
+          >
+            <span>{lang === 'bn' ? '🇬🇧' : '🇧🇩'}</span>
+            <span>{lang === 'bn' ? 'English' : 'বাংলা'}</span>
+          </button>
+        )}
+
+        {!collapsed && (
+          <div className="flex items-center gap-2 px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 font-bold text-sm shrink-0">
               {user?.name?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-200 truncate">{user?.name}</p>
               <span className={cn('text-xs px-1.5 py-0.5 rounded font-mono', getSubscriptionBadge(user?.subscription || 'free'))}>
-                {user?.subscription === 'free' ? 'ফ্রি' : user?.subscription === 'pro' ? 'প্রো' : 'প্রিমিয়াম'}
+                {subLabel}
               </span>
             </div>
           </div>
@@ -100,7 +117,7 @@ export default function Layout() {
           )}
         >
           <LogOut size={16} />
-          {!collapsed && 'লগআউট'}
+          {!collapsed && t.sidebarLogout}
         </button>
       </div>
     </div>
@@ -139,8 +156,13 @@ export default function Layout() {
           <button onClick={() => setMobileOpen(true)} className="text-green-400">
             <Menu size={22} />
           </button>
-          <span className="text-green-400 font-bold font-mono">🤖 AI শালা</span>
-          <div className="w-8" />
+          <span className="text-green-400 font-bold font-mono">🤖 {t.brand}</span>
+          <button
+            onClick={toggle}
+            className="text-xs text-gray-400 hover:text-green-400 transition-colors"
+          >
+            {lang === 'bn' ? '🇬🇧 EN' : '🇧🇩 বাং'}
+          </button>
         </div>
 
         {/* Page content */}

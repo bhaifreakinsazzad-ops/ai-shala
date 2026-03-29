@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LanguageContext'
 import { authApi, subscriptionApi } from '@/lib/api'
 import { MessageSquare, Image, Wrench, CreditCard, Crown, TrendingUp, Calendar, Zap } from 'lucide-react'
 import { cn, getSubscriptionBadge, formatDate } from '@/lib/utils'
 
 export default function DashboardPage() {
   const { user, refreshUser, updateUser } = useAuth()
+  const { t } = useLang()
   const [payments, setPayments] = useState<any[]>([])
   const [editName, setEditName] = useState(false)
   const [newName, setNewName] = useState(user?.name || '')
@@ -47,7 +49,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">আমার ড্যাশবোর্ড</h1>
+            <h1 className="text-2xl font-bold text-white">{t.dashTitle}</h1>
             <p className="text-gray-500 text-sm mt-0.5">স্বাগতম, {user.name}!</p>
           </div>
           <span className={cn('px-3 py-1.5 rounded-full text-sm font-bold', getSubscriptionBadge(user.subscription))}>
@@ -102,7 +104,7 @@ export default function DashboardPage() {
         {/* Usage */}
         <div className="glass rounded-xl p-6 border border-green-900/20">
           <h2 className="font-bold text-gray-300 mb-5 flex items-center gap-2">
-            <TrendingUp size={18} className="text-green-400" /> আজকের ব্যবহার
+            <TrendingUp size={18} className="text-green-400" /> {t.dashTodayUsage}
           </h2>
           <div className="space-y-4">
             <div>

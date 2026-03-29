@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { chatApi, modelsApi } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LanguageContext'
 import { Send, Plus, Trash2, MessageSquare, Copy, ChevronDown, Bot, User } from 'lucide-react'
 import { cn, formatDate, copyToClipboard } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
@@ -14,6 +15,7 @@ export default function ChatPage() {
   const { conversationId } = useParams()
   const navigate = useNavigate()
   const { user, refreshUser } = useAuth()
+  const { t } = useLang()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [activeConv, setActiveConv] = useState<Conversation | null>(null)
@@ -92,7 +94,7 @@ export default function ChatPage() {
       loadConversations()
       refreshUser()
     } catch (err: any) {
-      const errMsg = err.response?.data?.error || 'মেসেজ পাঠাতে সমস্যা হয়েছে'
+      const errMsg = err.response?.data?.error || t.chatSendError
       setMessages(prev => [...prev.filter(m => m.id !== 'temp-user'), { id: 'err', role: 'assistant', content: `❌ ${errMsg}`, created_at: new Date().toISOString() }])
     } finally {
       setSending(false)
@@ -112,12 +114,12 @@ export default function ChatPage() {
       <div className="hidden lg:flex flex-col w-64 xl:w-72 border-r border-green-900/20 glass overflow-hidden">
         <div className="p-3 border-b border-green-900/20">
           <button onClick={newConversation} className="btn-green w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-            <Plus size={16} /> নতুন চ্যাট
+            <Plus size={16} /> {t.chatNewChat}
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {conversations.length === 0 && (
-            <p className="text-gray-600 text-sm text-center py-8">কোনো চ্যাট নেই</p>
+            <p className="text-gray-600 text-sm text-center py-8">{t.chatNoConvs}</p>
           )}
           {conversations.map(conv => (
             <button
@@ -147,7 +149,7 @@ export default function ChatPage() {
         {user?.subscription === 'free' && (
           <div className="p-3 border-t border-green-900/20">
             <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-              <span>আজকের ব্যবহার</span>
+              <span>{t.chatToday}</span>
               <span>{user.daily_usage}/{user.daily_limit}</span>
             </div>
             <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
@@ -166,7 +168,7 @@ export default function ChatPage() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-green-900/20 glass-light shrink-0">
           <div className="flex items-center gap-3">
             <span className="text-green-400 font-medium text-sm truncate max-w-[200px]">
-              {activeConv?.title || 'নতুন চ্যাট'}
+              {activeConv?.title || t.chatNewChat}
             </span>
           </div>
           {/* Model picker */}
@@ -212,12 +214,10 @@ export default function ChatPage() {
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center py-20">
               <div className="text-6xl mb-4">🤖</div>
-              <h2 className="text-xl font-bold text-green-400 mb-2">AI শালায় স্বাগতম!</h2>
-              <p className="text-gray-500 text-sm max-w-sm">
-                যেকোনো প্রশ্ন করুন, কোড লিখতে বলুন, গল্প লিখতে বলুন — সব বাংলায়।
-              </p>
+              <h2 className="text-xl font-bold text-green-400 mb-2">{t.chatWelcome}</h2>
+              <p className="text-gray-500 text-sm max-w-sm">{t.chatWelcomeSub}</p>
               <div className="grid grid-cols-2 gap-3 mt-6 max-w-sm w-full">
-                {['বাংলায় একটি গল্প লিখুন', 'Python কোড লিখে দিন', 'আমার CV তৈরি করুন', 'এই English টা অনুবাদ করুন'].map(s => (
+                {[t.chatPrompt1, t.chatPrompt2, t.chatPrompt3, t.chatPrompt4].map(s => (
                   <button
                     key={s}
                     onClick={() => setInput(s)}
@@ -292,12 +292,12 @@ export default function ChatPage() {
                 onKeyDown={handleKeyDown}
                 rows={1}
                 className="w-full bg-black/60 border border-green-900/30 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/40 resize-none transition-colors text-sm"
-                placeholder="বাংলায় বা English এ লিখুন... (Enter পাঠান)"
+                placeholder={t.chatPlaceholder}
                 style={{ maxHeight: '120px', height: 'auto' }}
                 onInput={e => {
-                  const t = e.target as HTMLTextAreaElement
-                  t.style.height = 'auto'
-                  t.style.height = Math.min(t.scrollHeight, 120) + 'px'
+                  const el = e.target as HTMLTextAreaElement
+                  el.style.height = 'auto'
+                  el.style.height = Math.min(el.scrollHeight, 120) + 'px'
                 }}
               />
             </div>

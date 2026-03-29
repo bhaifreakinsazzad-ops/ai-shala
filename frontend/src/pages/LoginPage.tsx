@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LanguageContext'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 
 export default function LoginPage() {
   const { login } = useAuth()
+  const { t, lang, toggle } = useLang()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
@@ -19,7 +21,7 @@ export default function LoginPage() {
       await login(form.email, form.password)
       navigate('/chat')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'লগইন করতে সমস্যা হয়েছে')
+      setError(err.response?.data?.error || t.loginError)
     } finally {
       setLoading(false)
     }
@@ -28,13 +30,19 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Logo + Lang Toggle */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
             <span className="text-4xl">🤖</span>
-            <span className="text-2xl font-bold text-green-400 font-mono">AI শালা</span>
+            <span className="text-2xl font-bold text-green-400 font-mono">{t.brand}</span>
           </Link>
-          <p className="text-gray-500 mt-2">আপনার অ্যাকাউন্টে প্রবেশ করুন</p>
+          <p className="text-gray-500 mt-2">{t.loginSubtitle}</p>
+          <button
+            onClick={toggle}
+            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-green-900/40 text-xs text-gray-400 hover:text-green-400 hover:border-green-500/50 transition-all"
+          >
+            {lang === 'bn' ? '🇬🇧 Switch to English' : '🇧🇩 বাংলায় দেখুন'}
+          </button>
         </div>
 
         {/* Card */}
@@ -47,19 +55,19 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label className="block text-sm text-gray-400 mb-2">ইমেইল</label>
+              <label className="block text-sm text-gray-400 mb-2">{t.emailLabel}</label>
               <input
                 type="email"
                 required
                 value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 className="w-full bg-black/50 border border-green-900/30 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-colors"
-                placeholder="আপনার ইমেইল"
+                placeholder={t.emailPlaceholder}
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-2">পাসওয়ার্ড</label>
+              <label className="block text-sm text-gray-400 mb-2">{t.passwordLabel}</label>
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}
@@ -67,7 +75,7 @@ export default function LoginPage() {
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   className="w-full bg-black/50 border border-green-900/30 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-colors pr-12"
-                  placeholder="আপনার পাসওয়ার্ড"
+                  placeholder={t.passwordPlaceholder}
                 />
                 <button
                   type="button"
@@ -85,18 +93,18 @@ export default function LoginPage() {
               className="btn-green w-full py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
-                <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> লগইন হচ্ছে...</>
+                <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> {t.loggingIn}</>
               ) : (
-                <><LogIn size={18} /> লগইন করুন</>
+                <><LogIn size={18} /> {t.loginBtn}</>
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-500 text-sm">
-              অ্যাকাউন্ট নেই?{' '}
+              {t.noAccount}{' '}
               <Link to="/register" className="text-green-400 hover:text-green-300 font-medium">
-                ফ্রিতে রেজিস্টার করুন
+                {t.registerFree}
               </Link>
             </p>
           </div>

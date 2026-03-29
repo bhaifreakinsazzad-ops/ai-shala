@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LanguageContext'
 import { Eye, EyeOff, UserPlus, CheckCircle } from 'lucide-react'
 
 export default function RegisterPage() {
   const { register } = useAuth()
+  const { t, lang, toggle } = useLang()
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '' })
   const [loading, setLoading] = useState(false)
@@ -15,11 +17,11 @@ export default function RegisterPage() {
     e.preventDefault()
     setError('')
     if (form.password !== form.confirm) {
-      setError('পাসওয়ার্ড মিলছে না')
+      setError(t.pwMismatch)
       return
     }
     if (form.password.length < 6) {
-      setError('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে')
+      setError(t.pwTooShort)
       return
     }
     setLoading(true)
@@ -27,7 +29,7 @@ export default function RegisterPage() {
       await register({ name: form.name, email: form.email, password: form.password, phone: form.phone })
       navigate('/chat')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'রেজিস্ট্রেশনে সমস্যা হয়েছে')
+      setError(err.response?.data?.error || t.registerError)
     } finally {
       setLoading(false)
     }
@@ -53,13 +55,19 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
             <span className="text-4xl">🤖</span>
-            <span className="text-2xl font-bold text-green-400 font-mono">AI শালা</span>
+            <span className="text-2xl font-bold text-green-400 font-mono">{t.brand}</span>
           </Link>
-          <p className="text-gray-500 mt-2">ফ্রিতে অ্যাকাউন্ট খুলুন</p>
+          <p className="text-gray-500 mt-2">{t.registerSubtitle}</p>
           <div className="flex items-center justify-center gap-2 mt-3">
             <CheckCircle size={14} className="text-green-400" />
-            <span className="text-green-400 text-sm font-medium">৭ দিন সম্পূর্ণ বিনামূল্যে</span>
+            <span className="text-green-400 text-sm font-medium">{t.registerFreeTag}</span>
           </div>
+          <button
+            onClick={toggle}
+            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-green-900/40 text-xs text-gray-400 hover:text-green-400 hover:border-green-500/50 transition-all"
+          >
+            {lang === 'bn' ? '🇬🇧 Switch to English' : '🇧🇩 বাংলায় দেখুন'}
+          </button>
         </div>
 
         <div className="glass rounded-2xl p-8 neon-border">
@@ -70,12 +78,12 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {field('name', 'আপনার নাম *', 'text', 'আপনার পূর্ণ নাম লিখুন')}
-            {field('email', 'ইমেইল *', 'email', 'example@gmail.com')}
-            {field('phone', 'মোবাইল নম্বর (ঐচ্ছিক)', 'tel', '01XXXXXXXXX')}
+            {field('name', t.nameLabel, 'text', t.namePlaceholder)}
+            {field('email', t.emailReq, 'email', 'example@gmail.com')}
+            {field('phone', t.phoneLabel, 'tel', t.phonePlaceholder)}
 
             <div>
-              <label className="block text-sm text-gray-400 mb-2">পাসওয়ার্ড *</label>
+              <label className="block text-sm text-gray-400 mb-2">{t.passwordReq}</label>
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}
@@ -83,7 +91,7 @@ export default function RegisterPage() {
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   className="w-full bg-black/50 border border-green-900/30 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-colors pr-12"
-                  placeholder="কমপক্ষে ৬ অক্ষর"
+                  placeholder={t.passwordMin}
                 />
                 <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -92,14 +100,14 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-2">পাসওয়ার্ড নিশ্চিত করুন *</label>
+              <label className="block text-sm text-gray-400 mb-2">{t.confirmPassword}</label>
               <input
                 type="password"
                 required
                 value={form.confirm}
                 onChange={e => setForm({ ...form, confirm: e.target.value })}
                 className="w-full bg-black/50 border border-green-900/30 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-colors"
-                placeholder="আবার পাসওয়ার্ড লিখুন"
+                placeholder={t.confirmPlaceholder}
               />
             </div>
 
@@ -109,16 +117,16 @@ export default function RegisterPage() {
               className="btn-green w-full py-3 flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
             >
               {loading ? (
-                <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> রেজিস্টার হচ্ছে...</>
+                <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> {t.registering}</>
               ) : (
-                <><UserPlus size={18} /> অ্যাকাউন্ট তৈরি করুন</>
+                <><UserPlus size={18} /> {t.registerBtn}</>
               )}
             </button>
           </form>
 
           <p className="text-center text-gray-500 text-sm mt-6">
-            আগেই আছেন?{' '}
-            <Link to="/login" className="text-green-400 hover:text-green-300 font-medium">লগইন করুন</Link>
+            {t.haveAccount}{' '}
+            <Link to="/login" className="text-green-400 hover:text-green-300 font-medium">{t.loginLink}</Link>
           </p>
         </div>
       </div>

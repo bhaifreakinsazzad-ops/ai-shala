@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/LoginPage'
 import RegisterPage from '@/pages/RegisterPage'
@@ -18,7 +19,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center">
         <div className="text-4xl mb-4 animate-pulse">🤖</div>
-        <p className="text-green-400 font-mono">লোড হচ্ছে...</p>
+        <p className="text-green-400 font-mono">লোড হচ্ছে... / Loading...</p>
       </div>
     </div>
   )
@@ -68,10 +69,12 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <div className="matrix-bg" aria-hidden="true" />
-        <AppRoutes />
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <div className="matrix-bg" aria-hidden="true" />
+          <AppRoutes />
+        </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   )
 }
