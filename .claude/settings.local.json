@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /tmp/superapp_extract)",
+      "Bash(tar -xzf QwnHceB9C3HeLKDBL-p9P.tar.gz -C /tmp/superapp_extract)",
+      "Bash(unzip -o \"C:/Users/EliteBook 840 G7/Downloads/Kimi_Agent_অ্যাপ উন্নয়ন ও গ্রাফিক \\(1\\).zip\" -d /tmp/kimi_extract)"
+    ]
+  }
+}

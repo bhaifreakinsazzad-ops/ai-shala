@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: ai-shala-backend
+    env: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      # Set all secrets in Render dashboard → Environment tab
+      # Do NOT put actual keys here
+      - key: JWT_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: COHERE_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://powered-by-bhaisazzad.online
+      - key: PAYMENT_PHONE
+        value: "01778307704"
+      - key: ADMIN_EMAILS
+        value: admin@aishala.com
+      - key: FREE_TRIAL_DAYS
+        value: "7"
+      - key: FREE_DAILY_LIMIT
+        value: "50"
+      - key: FREE_IMAGE_DAILY_LIMIT
+        value: "5"
