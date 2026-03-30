@@ -233,8 +233,8 @@ export default function ChatPage() {
           {messages.map(msg => (
             <div key={msg.id} className={cn('flex gap-3 animate-fade-in', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
               {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 shrink-0 mt-1">
-                  <Bot size={16} />
+                <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-1 border border-green-500/30">
+                  <img src="/ai-avatar.jpg" alt="AI" className="w-full h-full object-cover" />
                 </div>
               )}
               <div className={cn('max-w-[80%] xl:max-w-[70%]', msg.role === 'user' ? 'message-user px-4 py-3' : 'message-ai px-4 py-3')}>
@@ -265,8 +265,8 @@ export default function ChatPage() {
 
           {typing && (
             <div className="flex gap-3 animate-fade-in">
-              <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 shrink-0">
-                <Bot size={16} />
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-green-500/30">
+                <img src="/ai-avatar.jpg" alt="AI" className="w-full h-full object-cover" />
               </div>
               <div className="message-ai px-4 py-3">
                 <div className="flex items-center gap-1">
