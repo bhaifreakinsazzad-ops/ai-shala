@@ -189,7 +189,7 @@ export default function PricingPage() {
         <div className="mt-14">
           <h3 className="text-2xl font-bold text-center mb-8 gradient-text">{t.pricingFaqTitle}</h3>
           <div className="space-y-4 max-w-2xl mx-auto">
-            {lang === 'en' ? [
+            {(lang === 'en' ? [
               { q: 'How quickly will my account be upgraded after payment?', a: 'Usually within 2–24 hours. Payments made after midnight will be processed the next morning.' },
               { q: 'What do I get with the Free plan?', a: '50 daily AI messages, 5 image generations, all basic tools, and 25+ AI models.' },
               { q: 'How do I pay with bKash?', a: 'Go to the payment page, select "bKash", send the amount to the provided number, and submit your transaction ID.' },
@@ -199,7 +199,7 @@ export default function PricingPage() {
               { q: 'ফ্রি প্ল্যানে কী কী পাব?', a: 'দৈনিক ৫০টি AI মেসেজ, ৫টি ছবি তৈরি, সব বেসিক টুলস এবং ২৫+ AI মডেল।' },
               { q: 'bKash দিয়ে কীভাবে পেমেন্ট করব?', a: 'পেমেন্ট পেজে গিয়ে "bKash" সিলেক্ট করুন। দেওয়া নম্বরে টাকা পাঠান এবং ট্রানজেকশন আইডি সাবমিট করুন।' },
               { q: 'কোনো সমস্যা হলে কোথায় যোগাযোগ করব?', a: 'পেমেন্ট নম্বরে WhatsApp বা SMS করুন অথবা AI চ্যাটে লিখুন।' },
-            ].map(({ q, a }) => (
+            ] as { q: string; a: string }[]).map(({ q, a }) => (
               <div key={q} className="glass-light rounded-xl p-5 border border-green-900/20">
                 <p className="font-medium text-green-300 mb-2">❓ {q}</p>
                 <p className="text-gray-400 text-sm leading-relaxed">{a}</p>
