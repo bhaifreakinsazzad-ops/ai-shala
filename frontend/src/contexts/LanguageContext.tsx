@@ -50,7 +50,6 @@ const translations = {
     modelsTitle: 'ফ্রি AI মডেলসমূহ',
     modelsSub: 'সব মডেল সম্পূর্ণ বিনামূল্যে ব্যবহার করুন',
     modelsMore: 'এবং আরো ৩০+ মডেল...',
-    modelBadgeFree: 'ফ্রি',
 
     // Pricing
     pricingTitle: 'সহজ মূল্য পরিকল্পনা',
@@ -229,7 +228,6 @@ const translations = {
     modelsTitle: 'Free AI Models',
     modelsSub: 'Use all models completely free of charge',
     modelsMore: 'And 30+ more models...',
-    modelBadgeFree: 'Free',
 
     // Pricing
     pricingTitle: 'Simple Pricing',

@@ -15,7 +15,7 @@ export default function ChatPage() {
   const { conversationId } = useParams()
   const navigate = useNavigate()
   const { user, refreshUser } = useAuth()
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [activeConv, setActiveConv] = useState<Conversation | null>(null)
@@ -184,7 +184,7 @@ export default function ChatPage() {
             {showModelPicker && (
               <div className="absolute right-0 top-10 w-72 glass border border-green-900/30 rounded-xl overflow-hidden z-50 shadow-2xl">
                 <div className="p-2 border-b border-green-900/20">
-                  <p className="text-xs text-gray-500 px-2">ফ্রি মডেলস — {models.length}টি</p>
+                  <p className="text-xs text-gray-500 px-2">AI {t.sidebarChat} — {models.length}{lang === 'bn' ? 'টি' : ''}</p>
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {models.map(m => (
