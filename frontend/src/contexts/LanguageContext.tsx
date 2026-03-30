@@ -90,7 +90,7 @@ const translations = {
     ctaBtn: 'এখনই রেজিস্টার করুন',
 
     // Footer
-    footerMade: 'Made with 💚 in Bangladesh · © 2025 AI Shala',
+    footerMade: 'Made with 💚 in Bangladesh · © 2026 - DhandaBuzz Powered by BhaiSazzaD',
 
     // Login page
     loginSubtitle: 'আপনার অ্যাকাউন্টে প্রবেশ করুন',
@@ -332,7 +332,7 @@ const translations = {
     ctaBtn: 'Register Now',
 
     // Footer
-    footerMade: 'Made with 💚 in Bangladesh · © 2025 AI Shala',
+    footerMade: 'Made with 💚 in Bangladesh · © 2026 - DhandaBuzz Powered by BhaiSazzaD',
 
     // Login page
     loginSubtitle: 'Sign in to your account',
