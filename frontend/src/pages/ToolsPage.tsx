@@ -3,18 +3,11 @@ import { toolsApi } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLang } from '@/contexts/LanguageContext'
 import { Link } from 'react-router-dom'
-import { Wrench, Play, Copy, Lock, ChevronRight } from 'lucide-react'
+import { Wrench, Play, Copy, Lock } from 'lucide-react'
 import { cn, copyToClipboard } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
 
 interface Tool { id: string; name: string; nameEn: string; icon: string; category: string; description: string; free: boolean }
-
-const CATEGORY_LABELS: Record<string, string> = {
-  writing: '✍️ লেখালেখি', language: '🌐 ভাষা', coding: '💻 কোডিং',
-  marketing: '📣 মার্কেটিং', career: '💼 ক্যারিয়ার', business: '📊 ব্যবসা',
-  ecommerce: '🛍️ ই-কমার্স', creative: '🎨 সৃজনশীল', education: '📚 শিক্ষা',
-  legal: '⚖️ আইন', finance: '💰 অর্থ',
-}
 
 const LANGUAGE_OPTIONS = ['Bengali (Bangla)', 'English', 'Arabic', 'Hindi', 'French', 'Spanish']
 const CODE_LANGUAGES = ['Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'PHP', 'Go', 'SQL']
@@ -32,6 +25,18 @@ export default function ToolsPage() {
   const [error, setError] = useState('')
   const [activeCategory, setActiveCategory] = useState<string>('all')
   const [copied, setCopied] = useState(false)
+
+  const CATEGORY_LABELS: Record<string, string> = lang === 'en' ? {
+    writing: '✍️ Writing', language: '🌐 Language', coding: '💻 Coding',
+    marketing: '📣 Marketing', career: '💼 Career', business: '📊 Business',
+    ecommerce: '🛍️ E-Commerce', creative: '🎨 Creative', education: '📚 Education',
+    legal: '⚖️ Legal', finance: '💰 Finance',
+  } : {
+    writing: '✍️ লেখালেখি', language: '🌐 ভাষা', coding: '💻 কোডিং',
+    marketing: '📣 মার্কেটিং', career: '💼 ক্যারিয়ার', business: '📊 ব্যবসা',
+    ecommerce: '🛍️ ই-কমার্স', creative: '🎨 সৃজনশীল', education: '📚 শিক্ষা',
+    legal: '⚖️ আইন', finance: '💰 অর্থ',
+  }
 
   useEffect(() => { loadTools() }, [])
 
@@ -60,12 +65,8 @@ export default function ToolsPage() {
       setResult(res.data.result)
       refreshUser()
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'টুল চালাতে সমস্যা হয়েছে'
-      if (err.response?.data?.upgradeRequired) {
-        setError('⚠️ ' + msg)
-      } else {
-        setError(msg)
-      }
+      const msg = err.response?.data?.error || t.toolError
+      setError(err.response?.data?.upgradeRequired ? '⚠️ ' + msg : msg)
     } finally {
       setRunning(false)
     }
@@ -77,8 +78,9 @@ export default function ToolsPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const categories = ['all', ...new Set(tools.map(t => t.category))]
-  const filteredTools = activeCategory === 'all' ? tools : tools.filter(t => t.category === activeCategory)
+  const categories = ['all', ...new Set(tools.map(tool => tool.category))]
+  const filteredTools = activeCategory === 'all' ? tools : tools.filter(tool => tool.category === activeCategory)
+  const toolName = (tool: Tool) => lang === 'en' && tool.nameEn ? tool.nameEn : tool.name
 
   const renderToolOptions = () => {
     if (!activeTool) return null
@@ -86,7 +88,7 @@ export default function ToolsPage() {
       case 'translator':
         return (
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">অনুবাদ করুন এই ভাষায়</label>
+            <label className="block text-xs text-gray-500 mb-1.5">{t.toolTranslateTo}</label>
             <select value={options.targetLang || 'Bengali (Bangla)'} onChange={e => setOptions({ ...options, targetLang: e.target.value })}
               className="w-full bg-black/50 border border-green-900/30 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none">
               {LANGUAGE_OPTIONS.map(l => <option key={l} value={l}>{l}</option>)}
@@ -96,7 +98,7 @@ export default function ToolsPage() {
       case 'code_generator':
         return (
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">প্রোগ্রামিং ভাষা</label>
+            <label className="block text-xs text-gray-500 mb-1.5">{t.toolCodeLang}</label>
             <select value={options.language || 'Python'} onChange={e => setOptions({ ...options, language: e.target.value })}
               className="w-full bg-black/50 border border-green-900/30 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none">
               {CODE_LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
@@ -106,7 +108,7 @@ export default function ToolsPage() {
       case 'social_media':
         return (
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">প্ল্যাটফর্ম</label>
+            <label className="block text-xs text-gray-500 mb-1.5">{t.toolPlatform}</label>
             <select value={options.platform || 'Facebook'} onChange={e => setOptions({ ...options, platform: e.target.value })}
               className="w-full bg-black/50 border border-green-900/30 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none">
               {PLATFORM_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
@@ -116,10 +118,10 @@ export default function ToolsPage() {
       case 'quiz_maker':
         return (
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">প্রশ্নের সংখ্যা</label>
+            <label className="block text-xs text-gray-500 mb-1.5">{t.toolQuestionCount}</label>
             <select value={options.count || '10'} onChange={e => setOptions({ ...options, count: e.target.value })}
               className="w-full bg-black/50 border border-green-900/30 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none">
-              {[5, 10, 15, 20].map(n => <option key={n} value={n}>{n}টি প্রশ্ন</option>)}
+              {[5, 10, 15, 20].map(n => <option key={n} value={n}>{n} {t.toolQuestions}</option>)}
             </select>
           </div>
         )
@@ -142,7 +144,9 @@ export default function ToolsPage() {
             onClick={() => setActiveCategory('all')}
             className={cn('text-xs px-2 py-1 rounded-lg transition-colors',
               activeCategory === 'all' ? 'bg-green-500/20 text-green-300' : 'text-gray-500 hover:text-gray-300')}
-          >সব</button>
+          >
+            {t.toolsAllCats}
+          </button>
           {categories.filter(c => c !== 'all').map(cat => (
             <button key={cat} onClick={() => setActiveCategory(cat)}
               className={cn('text-xs px-2 py-1 rounded-lg transition-colors',
@@ -160,7 +164,7 @@ export default function ToolsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className={cn('text-sm font-medium truncate', activeTool?.id === tool.id ? 'text-green-300' : 'text-gray-300')}>
-                    {lang === 'en' && tool.nameEn ? tool.nameEn : tool.name}
+                    {toolName(tool)}
                   </span>
                   {!tool.free && <Lock size={10} className="text-yellow-500 shrink-0" />}
                 </div>
@@ -178,14 +182,14 @@ export default function ToolsPage() {
             <div>
               <div className="text-6xl mb-4">🛠️</div>
               <h2 className="text-xl font-bold text-green-400 mb-2">{t.toolsTitle}</h2>
-              <p className="text-gray-500 text-sm max-w-xs">বাম পাশ থেকে একটি টুল বেছে নিন</p>
+              <p className="text-gray-500 text-sm max-w-xs">{t.toolSelectPrompt}</p>
               {/* Mobile tool grid */}
               <div className="grid grid-cols-3 gap-3 mt-6 md:hidden">
                 {tools.slice(0, 9).map(tool => (
                   <button key={tool.id} onClick={() => selectTool(tool)}
                     className="glass-light rounded-xl p-3 flex flex-col items-center gap-1 border border-green-900/20">
                     <span className="text-2xl">{tool.icon}</span>
-                    <span className="text-xs text-gray-400">{lang === 'en' && tool.nameEn ? tool.nameEn : tool.name}</span>
+                    <span className="text-xs text-gray-400">{toolName(tool)}</span>
                   </button>
                 ))}
               </div>
@@ -198,7 +202,7 @@ export default function ToolsPage() {
               <div className="flex items-center gap-3">
                 <span className="text-4xl">{activeTool.icon}</span>
                 <div>
-                  <h2 className="text-xl font-bold text-white">{lang === 'en' && activeTool.nameEn ? activeTool.nameEn : activeTool.name}</h2>
+                  <h2 className="text-xl font-bold text-white">{toolName(activeTool)}</h2>
                   <p className="text-gray-500 text-sm">{activeTool.description}</p>
                 </div>
                 {!activeTool.free && (
@@ -217,21 +221,21 @@ export default function ToolsPage() {
 
               {/* Input */}
               <div>
-                <label className="block text-sm text-gray-400 mb-2">ইনপুট লিখুন</label>
+                <label className="block text-sm text-gray-400 mb-2">{t.toolInputLabel}</label>
                 <textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   rows={5}
                   className="w-full bg-black/50 border border-green-900/30 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/40 resize-none"
-                  placeholder="এখানে আপনার লেখা দিন..."
+                  placeholder={t.toolInputPlaceholder}
                 />
               </div>
 
               {error && (
                 <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
                   {error}
-                  {error.includes('আপগ্রেড') && (
-                    <Link to="/payment" className="text-green-400 hover:underline ml-2">প্রো নিন →</Link>
+                  {(error.includes('upgrade') || error.includes('আপগ্রেড') || error.includes('⚠️')) && (
+                    <Link to="/payment" className="text-green-400 hover:underline ml-2">{t.toolGetPro} →</Link>
                   )}
                 </div>
               )}
@@ -242,9 +246,9 @@ export default function ToolsPage() {
                 className="btn-green flex items-center gap-2 px-6 py-3 disabled:opacity-40"
               >
                 {running ? (
-                  <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> চলছে...</>
+                  <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> {t.toolRunning}</>
                 ) : (
-                  <><Play size={18} /> টুল চালান</>
+                  <><Play size={18} /> {t.toolRun}</>
                 )}
               </button>
 
@@ -252,9 +256,9 @@ export default function ToolsPage() {
               {result && (
                 <div className="glass-light rounded-xl overflow-hidden border border-green-900/20">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-green-900/20">
-                    <span className="text-sm font-medium text-green-400">ফলাফল</span>
+                    <span className="text-sm font-medium text-green-400">{t.toolResult}</span>
                     <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-green-400 transition-colors">
-                      <Copy size={12} /> {copied ? 'কপি হয়েছে!' : 'কপি করুন'}
+                      <Copy size={12} /> {copied ? t.toolCopied : t.toolCopy}
                     </button>
                   </div>
                   <div className="p-4 prose-dark max-h-96 overflow-y-auto">

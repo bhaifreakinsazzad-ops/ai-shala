@@ -19,7 +19,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center">
         <div className="text-4xl mb-4 animate-pulse">🤖</div>
-        <p className="text-green-400 font-mono">লোড হচ্ছে... / Loading...</p>
+        <p className="text-green-400 font-mono">Loading...</p>
       </div>
     </div>
   )

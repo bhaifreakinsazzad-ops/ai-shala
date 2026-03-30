@@ -6,23 +6,6 @@ import { Link } from 'react-router-dom'
 import { Sparkles, Download, RefreshCw, ZoomIn, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const STYLES = [
-  { id: 'realistic', label: 'রিয়েলিস্টিক', emoji: '📸' },
-  { id: 'anime', label: 'অ্যানিমে', emoji: '🎌' },
-  { id: 'cartoon', label: 'কার্টুন', emoji: '🎨' },
-  { id: 'oil_painting', label: 'তৈলচিত্র', emoji: '🖼️' },
-  { id: 'watercolor', label: 'জলরং', emoji: '💧' },
-  { id: 'digital_art', label: 'ডিজিটাল আর্ট', emoji: '💻' },
-  { id: 'sketch', label: 'স্কেচ', emoji: '✏️' },
-  { id: 'bangladeshi', label: 'বাংলাদেশি', emoji: '🇧🇩' },
-]
-
-const SIZES = [
-  { label: 'বর্গ', value: { width: 1024, height: 1024 }, icon: '⬛' },
-  { label: 'ল্যান্ডস্কেপ', value: { width: 1280, height: 720 }, icon: '🖥️' },
-  { label: 'পোর্ট্রেট', value: { width: 720, height: 1280 }, icon: '📱' },
-]
-
 const EXAMPLE_PROMPTS = [
   'পদ্মা নদীর তীরে সূর্যাস্তের দৃশ্য',
   'ঢাকার পুরানো শহরের ঐতিহাসিক রিকশা',
@@ -37,12 +20,29 @@ export default function ImagePage() {
   const { t } = useLang()
   const [prompt, setPrompt] = useState('')
   const [style, setStyle] = useState('realistic')
-  const [size, setSize] = useState(SIZES[0])
+  const [sizeIndex, setSizeIndex] = useState(0)
   const [generating, setGenerating] = useState(false)
   const [result, setResult] = useState<{ url: string; prompt: string } | null>(null)
   const [history, setHistory] = useState<any[]>([])
   const [fullscreen, setFullscreen] = useState<string | null>(null)
   const [error, setError] = useState('')
+
+  const STYLES = [
+    { id: 'realistic',    label: t.imageStyleRealistic,   emoji: '📸' },
+    { id: 'anime',        label: t.imageStyleAnime,        emoji: '🎌' },
+    { id: 'cartoon',      label: t.imageStyleCartoon,      emoji: '🎨' },
+    { id: 'oil_painting', label: t.imageStyleOilPainting,  emoji: '🖼️' },
+    { id: 'watercolor',   label: t.imageStyleWatercolor,   emoji: '💧' },
+    { id: 'digital_art',  label: t.imageStyleDigitalArt,   emoji: '💻' },
+    { id: 'sketch',       label: t.imageStyleSketch,       emoji: '✏️' },
+    { id: 'bangladeshi',  label: t.imageStyleBangladeshi,  emoji: '🇧🇩' },
+  ]
+
+  const SIZES = [
+    { label: t.imageSizeSquare,    value: { width: 1024, height: 1024 }, icon: '⬛' },
+    { label: t.imageSizeLandscape, value: { width: 1280, height: 720 },  icon: '🖥️' },
+    { label: t.imageSizePortrait,  value: { width: 720,  height: 1280 }, icon: '📱' },
+  ]
 
   useEffect(() => { loadHistory() }, [])
 
@@ -57,19 +57,20 @@ export default function ImagePage() {
     if (!prompt.trim() || generating) return
     setError('')
     setGenerating(true)
+    const size = SIZES[sizeIndex]
     try {
       const res = await imageApi.generate({ prompt, style, ...size.value })
       setResult({ url: res.data.url, prompt })
       loadHistory()
       refreshUser()
     } catch (err: any) {
-      setError(err.response?.data?.error || 'ছবি তৈরিতে সমস্যা হয়েছে')
+      setError(err.response?.data?.error || 'Image generation failed. Please try again.')
     } finally {
       setGenerating(false)
     }
   }
 
-  const downloadImage = async (url: string) => {
+  const downloadImage = (url: string) => {
     const a = document.createElement('a')
     a.href = url
     a.download = `ai-shala-${Date.now()}.jpg`
@@ -78,6 +79,7 @@ export default function ImagePage() {
   }
 
   const canGenerate = user?.subscription !== 'free' || (user.image_daily_usage || 0) < (user.image_daily_limit || 5)
+  const size = SIZES[sizeIndex]
 
   return (
     <div className="h-full overflow-y-auto p-4 md:p-6">
@@ -88,7 +90,7 @@ export default function ImagePage() {
             <Sparkles className="text-green-400" size={24} />
             {t.imageTitle}
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Pollinations.ai দিয়ে সম্পূর্ণ বিনামূল্যে ছবি তৈরি করুন</p>
+          <p className="text-gray-500 text-sm mt-1">{t.imageSubtitle}</p>
         </div>
 
         {/* Usage warning */}
@@ -96,14 +98,14 @@ export default function ImagePage() {
           <div className="glass-light rounded-xl p-4 mb-6 flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-300">
-                আজকের ছবি: <span className="text-green-400 font-bold">{user.image_daily_usage}/{user.image_daily_limit}</span>
+                {t.imageTodayCount}: <span className="text-green-400 font-bold">{user.image_daily_usage}/{user.image_daily_limit}</span>
               </p>
               <div className="h-1 bg-gray-800 rounded-full w-40 mt-2">
                 <div className="h-full bg-green-500 rounded-full" style={{ width: `${((user.image_daily_usage || 0) / (user.image_daily_limit || 5)) * 100}%` }} />
               </div>
             </div>
             <Link to="/payment" className="text-xs text-green-400 border border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-500/10 transition-colors">
-              আনলিমিটেড পেতে →
+              {t.imageGetUnlimited} →
             </Link>
           </div>
         )}
@@ -121,7 +123,6 @@ export default function ImagePage() {
                 className="w-full bg-black/50 border border-green-900/30 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/40 resize-none transition-colors"
                 placeholder={t.imagePlaceholder}
               />
-              {/* Example prompts */}
               <div className="flex flex-wrap gap-2 mt-2">
                 {EXAMPLE_PROMPTS.map(p => (
                   <button
@@ -161,13 +162,13 @@ export default function ImagePage() {
             <div>
               <label className="block text-sm text-gray-400 mb-2">{t.imageSizeLabel}</label>
               <div className="flex gap-2">
-                {SIZES.map(s => (
+                {SIZES.map((s, idx) => (
                   <button
                     key={s.label}
-                    onClick={() => setSize(s)}
+                    onClick={() => setSizeIndex(idx)}
                     className={cn(
                       'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs transition-all',
-                      size.label === s.label
+                      sizeIndex === idx
                         ? 'border-green-500/50 bg-green-500/10 text-green-300'
                         : 'border-green-900/20 text-gray-500 hover:border-green-900/40'
                     )}
@@ -188,7 +189,7 @@ export default function ImagePage() {
               {generating ? (
                 <><RefreshCw size={18} className="animate-spin" /> {t.imageGenerating}</>
               ) : !canGenerate ? (
-                <><Lock size={18} /> দৈনিক সীমা শেষ</>
+                <><Lock size={18} /> {t.imageLimitReached}</>
               ) : (
                 <><Sparkles size={18} /> {t.imageGenerateBtn}</>
               )}
@@ -201,13 +202,14 @@ export default function ImagePage() {
               {generating && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-10">
                   <div className="w-12 h-12 border-2 border-green-500/30 border-t-green-500 rounded-full animate-spin mb-3" />
-                  <p className="text-green-400 text-sm">ছবি তৈরি হচ্ছে...</p>
-                  <p className="text-gray-600 text-xs mt-1">১০-৩০ সেকেন্ড</p>
+                  <p className="text-green-400 text-sm">{t.imageGeneratingMsg}</p>
+                  <p className="text-gray-600 text-xs mt-1">{t.imageTimeSec}</p>
                 </div>
               )}
               {result ? (
                 <>
-                  <img src={result.url} alt={result.prompt} className="w-full h-full object-cover" onError={() => setError('ছবি লোড হয়নি, আবার চেষ্টা করুন')} />
+                  <img src={result.url} alt={result.prompt} className="w-full h-full object-cover"
+                    onError={() => setError('Image failed to load, please try again')} />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                     <button onClick={() => setFullscreen(result.url)} className="p-3 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors">
                       <ZoomIn size={20} />
@@ -221,7 +223,7 @@ export default function ImagePage() {
                 <div className="absolute inset-0 flex items-center justify-center text-center p-6">
                   <div>
                     <div className="text-5xl mb-3">🎨</div>
-                    <p className="text-gray-600 text-sm">আপনার ছবি এখানে দেখাবে</p>
+                    <p className="text-gray-600 text-sm">{t.imagePlaceholderMsg}</p>
                   </div>
                 </div>
               )}
@@ -232,7 +234,7 @@ export default function ImagePage() {
         {/* History */}
         {history.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-lg font-bold text-gray-300 mb-4">আগের ছবিগুলো</h2>
+            <h2 className="text-lg font-bold text-gray-300 mb-4">{t.imageHistory}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {history.map(img => (
                 <div key={img.id} className="aspect-square rounded-xl overflow-hidden relative group cursor-pointer border border-green-900/10"
