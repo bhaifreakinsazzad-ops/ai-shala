@@ -3,6 +3,9 @@ import {
   ArrowRight,
   BadgeCheck,
   Check,
+  Clock3,
+  CreditCard,
+  Globe,
   Image as ImageIcon,
   MessageSquare,
   Shield,
@@ -13,58 +16,50 @@ import {
 import { useLang } from '@/contexts/LanguageContext'
 
 const socialProof = {
-  en: [
-    '40+ AI models in one place',
-    'Bangla-first interface + prompts',
-    'bKash / Nagad payments supported',
-  ],
-  bn: [
-    'এক প্ল্যাটফর্মে ৪০+ AI মডেল',
-    'বাংলা-ফার্স্ট ইন্টারফেস ও প্রম্পট',
-    'bKash / Nagad পেমেন্ট সাপোর্টেড',
-  ],
+  en: ['40+ AI models', '20+ AI tools', 'Bangla-first experience', 'Local payments'],
+  bn: ['৪০+ AI মডেল', '২০+ AI টুলস', 'বাংলা-ফার্স্ট এক্সপেরিয়েন্স', 'লোকাল পেমেন্ট'],
 }
 
 const valueBullets = {
   en: [
-    'No setup needed — create account and start in under 60 seconds',
-    'Chat, image generation, and productivity tools in one dashboard',
-    'Start free, upgrade only when you need higher limits',
+    'Start in under 60 seconds with simple signup',
+    'Run AI chat, image generation, and tools from one account',
+    'Go free first, then scale when your usage grows',
   ],
   bn: [
-    'কোনো সেটআপ লাগবে না — ৬০ সেকেন্ডে অ্যাকাউন্ট খুলে শুরু করুন',
-    'একই ড্যাশবোর্ডে চ্যাট, ছবি জেনারেশন ও প্রোডাক্টিভিটি টুলস',
-    'ফ্রি থেকে শুরু করুন, বেশি দরকার হলে আপগ্রেড করুন',
+    'সহজ রেজিস্ট্রেশনে ৬০ সেকেন্ডেই শুরু করুন',
+    'একই অ্যাকাউন্টে AI চ্যাট, ছবি জেনারেশন ও টুলস চালান',
+    'আগে ফ্রি শুরু করুন, প্রয়োজন বাড়লে আপগ্রেড করুন',
   ],
 }
 
 const faqs = {
   en: [
     {
-      q: 'Can I use AI Shala for free first?',
-      a: 'Yes. You can start on the free plan with daily limits and trial access to core features.',
+      q: 'Do I need a credit card to start?',
+      a: 'No. You can register and start with the free plan immediately.',
     },
     {
-      q: 'Is this built for Bangla users?',
-      a: 'Yes. The product is optimized for Bangla prompts, Bangla UI, and Bangladesh-based payment flow.',
+      q: 'Can I pay from Bangladesh?',
+      a: 'Yes. bKash, Nagad, Rocket and bank transfer are supported.',
     },
     {
-      q: 'What can I do inside one account?',
-      a: 'Use AI chat, generate images, and run 20+ tools for writing, translation, coding, CV, and more.',
+      q: 'What is included in one account?',
+      a: 'AI chat, AI image generation, and 20+ productivity tools in one place.',
     },
   ],
   bn: [
     {
-      q: 'আমি কি আগে ফ্রিতে ব্যবহার করতে পারব?',
-      a: 'হ্যাঁ। ফ্রি প্ল্যানে দৈনিক লিমিটসহ কোর ফিচারগুলো ব্যবহার করতে পারবেন।',
+      q: 'শুরু করতে কি ক্রেডিট কার্ড দরকার?',
+      a: 'না। রেজিস্টার করলেই ফ্রি প্ল্যানে সাথে সাথে শুরু করতে পারবেন।',
     },
     {
-      q: 'এটা কি বাংলা ইউজারদের জন্য তৈরি?',
-      a: 'হ্যাঁ। বাংলা প্রম্পট, বাংলা UI এবং বাংলাদেশের পেমেন্ট ফ্লো অনুযায়ী অপ্টিমাইজড।',
+      q: 'বাংলাদেশ থেকে পেমেন্ট করা যাবে?',
+      a: 'হ্যাঁ। bKash, Nagad, Rocket এবং ব্যাংক ট্রান্সফার সাপোর্টেড।',
     },
     {
-      q: 'একটি অ্যাকাউন্টে কী কী করা যাবে?',
-      a: 'AI চ্যাট, ছবি তৈরি এবং লেখা/অনুবাদ/কোড/CV সহ ২০+ টুলস ব্যবহার করতে পারবেন।',
+      q: 'একটি অ্যাকাউন্টে কী কী থাকবে?',
+      a: 'AI চ্যাট, AI ছবি জেনারেশন এবং ২০+ প্রোডাক্টিভিটি টুলস একসাথে।',
     },
   ],
 }
@@ -74,24 +69,57 @@ export default function LandingPage() {
 
   const steps = lang === 'bn'
     ? [
-        { title: 'অ্যাকাউন্ট খুলুন', desc: 'ইমেইল দিয়ে দ্রুত রেজিস্টার করে ঢুকে পড়ুন।' },
-        { title: 'আপনার কাজ বেছে নিন', desc: 'চ্যাট, ছবি, বা টুলস—যেটা দরকার সেটাই ব্যবহার করুন।' },
-        { title: 'রেজাল্ট কপি ও শেয়ার', desc: 'তৈরি হওয়া কনটেন্ট সাথে সাথে কাজে লাগান।' },
+        { title: 'অ্যাকাউন্ট খুলুন', desc: 'ইমেইল দিয়ে দ্রুত রেজিস্টার করুন।' },
+        { title: 'কাজ বেছে নিন', desc: 'চ্যাট, ছবি, বা টুলস যেটা দরকার সেটি চালু করুন।' },
+        { title: 'রেজাল্ট ব্যবহার করুন', desc: 'কপি করে সাথে সাথে আপনার কাজে ব্যবহার করুন।' },
       ]
     : [
-        { title: 'Create your account', desc: 'Sign up with email and get inside quickly.' },
-        { title: 'Pick your workflow', desc: 'Use chat, image generation, or AI tools instantly.' },
-        { title: 'Copy and ship output', desc: 'Use your generated results directly in real work.' },
+        { title: 'Create account', desc: 'Sign up quickly with your email.' },
+        { title: 'Pick workflow', desc: 'Launch chat, images, or tools instantly.' },
+        { title: 'Use output', desc: 'Copy and use results in your real work fast.' },
       ]
+
+  const pricingCards = [
+    {
+      name: t.plan1Name,
+      price: `${t.plan1Price}${t.plan1Period}`,
+      features: [t.plan1F1, t.plan1F2],
+      cta: t.pricingStartFree,
+      to: '/register',
+    },
+    {
+      name: t.plan2Name,
+      price: `${t.plan2Price}${t.plan2Period}`,
+      features: [t.plan2F1, t.plan2F2],
+      cta: t.pricingPayNow,
+      to: '/pricing',
+    },
+    {
+      name: t.plan3Name,
+      price: `${t.plan3Price}${t.plan3Period}`,
+      features: [t.plan3F1, t.plan3F2],
+      cta: t.pricingPayNow,
+      to: '/pricing',
+    },
+  ]
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-green-500 focus:px-3 focus:py-2 focus:text-black">
+        Skip to content
+      </a>
+
       <header className="sticky top-0 z-40 border-b border-green-900/40 bg-black/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <Sparkles className="text-green-400" size={20} />
             <span className="font-mono text-lg font-bold text-green-400">{t.brand}</span>
           </div>
+          <nav className="hidden items-center gap-5 text-sm text-gray-300 md:flex">
+            <a href="#features" className="hover:text-green-300">{t.navFeatures}</a>
+            <a href="#pricing" className="hover:text-green-300">{t.navPricing}</a>
+            <a href="#faq" className="hover:text-green-300">FAQ</a>
+          </nav>
           <div className="flex items-center gap-2">
             <button
               onClick={toggle}
@@ -102,24 +130,21 @@ export default function LandingPage() {
             <Link to="/login" className="hidden text-sm text-gray-300 hover:text-green-300 sm:inline">
               {t.login}
             </Link>
-            <Link
-              to="/register"
-              className="rounded-md bg-green-500 px-3 py-1.5 text-sm font-semibold text-black transition hover:bg-green-400"
-            >
+            <Link to="/register" className="rounded-md bg-green-500 px-3 py-1.5 text-sm font-semibold text-black transition hover:bg-green-400">
               {t.startFree}
             </Link>
           </div>
         </div>
       </header>
 
-      <main>
-        <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-14 pt-14 md:grid-cols-2 md:pt-20">
+      <main id="main-content">
+        <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-10 pt-14 md:grid-cols-2 md:pt-20">
           <div>
             <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-green-700/30 bg-green-900/20 px-3 py-1 text-xs text-green-300">
               <BadgeCheck size={14} /> {t.tagline}
             </p>
             <h1 className="text-4xl font-extrabold leading-tight md:text-5xl">
-              {t.heroTitle1}{' '}<span className="text-green-400">{t.heroTitle2}</span>
+              {t.heroTitle1} <span className="text-green-400">{t.heroTitle2}</span>
             </h1>
             <p className="mt-4 max-w-xl text-gray-300">{t.heroSub}</p>
             <ul className="mt-6 space-y-2 text-sm text-gray-300">
@@ -131,16 +156,10 @@ export default function LandingPage() {
               ))}
             </ul>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link
-                to="/register"
-                className="inline-flex items-center gap-2 rounded-md bg-green-500 px-5 py-3 font-semibold text-black transition hover:bg-green-400"
-              >
+              <Link to="/register" className="inline-flex items-center gap-2 rounded-md bg-green-500 px-5 py-3 font-semibold text-black transition hover:bg-green-400">
                 {t.ctaBtn} <ArrowRight size={16} />
               </Link>
-              <Link
-                to="/pricing"
-                className="rounded-md border border-green-700/50 px-5 py-3 text-sm font-medium text-gray-200 transition hover:border-green-500 hover:text-green-300"
-              >
+              <Link to="/pricing" className="rounded-md border border-green-700/50 px-5 py-3 text-sm font-medium text-gray-200 transition hover:border-green-500 hover:text-green-300">
                 {t.navPricing}
               </Link>
             </div>
@@ -154,25 +173,57 @@ export default function LandingPage() {
           </div>
 
           <div className="rounded-2xl border border-green-900/40 bg-gradient-to-b from-green-950/50 to-zinc-950 p-6">
-            <h2 className="text-lg font-bold text-green-300">{lang === 'bn' ? 'কেন এটা কনভার্ট করে' : 'Why this converts'}</h2>
-            <div className="mt-4 space-y-4 text-sm text-gray-300">
-              <div className="rounded-lg border border-green-900/30 bg-black/40 p-4">
-                <p className="font-semibold text-white">{lang === 'bn' ? 'এক ক্লিকে শুরু' : 'One-click onboarding'}</p>
-                <p className="mt-1">{lang === 'bn' ? 'ল্যান্ডিং থেকে সরাসরি রেজিস্টার—অতিরিক্ত ধাপ নেই।' : 'Direct path from hero to signup without extra friction.'}</p>
-              </div>
-              <div className="rounded-lg border border-green-900/30 bg-black/40 p-4">
-                <p className="font-semibold text-white">{lang === 'bn' ? 'স্পষ্ট অফার' : 'Clear offer'}</p>
-                <p className="mt-1">{lang === 'bn' ? 'ফ্রি স্টার্ট + বাংলাদেশি পেমেন্ট = দ্রুত সিদ্ধান্ত।' : 'Free start + local payment rails help users decide faster.'}</p>
-              </div>
-              <div className="rounded-lg border border-green-900/30 bg-black/40 p-4">
-                <p className="font-semibold text-white">{lang === 'bn' ? 'বিশ্বাসযোগ্য ভ্যালু' : 'Trust with value proof'}</p>
-                <p className="mt-1">{lang === 'bn' ? 'মডেল সংখ্যা, টুলস, বাংলা সাপোর্ট—সবচেয়ে গুরুত্বপূর্ণ তথ্য প্রথমেই।' : 'Models, tools, and language support are visible above the fold.'}</p>
-              </div>
+            <h2 className="text-xl font-bold text-green-300">{lang === 'bn' ? 'কেন AI শালা' : 'Why AI Shala'}</h2>
+            <div className="mt-4 grid gap-3 text-sm">
+              {[
+                {
+                  icon: Clock3,
+                  title: lang === 'bn' ? 'দ্রুত অনবোর্ডিং' : 'Fast onboarding',
+                  text: lang === 'bn' ? 'সরাসরি সাইনআপ থেকে আপনার কাজে।' : 'Move from signup to output in minutes.',
+                },
+                {
+                  icon: CreditCard,
+                  title: lang === 'bn' ? 'লোকাল পেমেন্ট' : 'Local payment fit',
+                  text: lang === 'bn' ? 'বাংলাদেশি পেমেন্ট মেথডে সহজ আপগ্রেড।' : 'Upgrade with Bangladesh-friendly payment methods.',
+                },
+                {
+                  icon: Globe,
+                  title: lang === 'bn' ? 'বাংলা ফোকাস' : 'Bangla-first UX',
+                  text: lang === 'bn' ? 'বাংলায় লিখুন, বাংলায় ফলাফল পান।' : 'Write prompts in Bangla and get usable outputs.',
+                },
+              ].map(({ icon: Icon, title, text }) => (
+                <article key={title} className="rounded-lg border border-green-900/30 bg-black/40 p-4">
+                  <Icon size={18} className="text-green-400" />
+                  <p className="mt-2 font-semibold text-white">{title}</p>
+                  <p className="mt-1 text-gray-300">{text}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-14">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-green-900/30 bg-zinc-950 p-4 text-center">
+              <p className="text-2xl font-bold text-green-400">40+</p>
+              <p className="text-sm text-gray-400">{t.stat1Label}</p>
+            </div>
+            <div className="rounded-xl border border-green-900/30 bg-zinc-950 p-4 text-center">
+              <p className="text-2xl font-bold text-green-400">20+</p>
+              <p className="text-sm text-gray-400">{t.stat2Label}</p>
+            </div>
+            <div className="rounded-xl border border-green-900/30 bg-zinc-950 p-4 text-center">
+              <p className="text-2xl font-bold text-green-400">{t.stat3Value}</p>
+              <p className="text-sm text-gray-400">{t.stat3Label}</p>
+            </div>
+            <div className="rounded-xl border border-green-900/30 bg-zinc-950 p-4 text-center">
+              <p className="text-2xl font-bold text-green-400">{t.stat4Value}</p>
+              <p className="text-sm text-gray-400">{t.stat4Label}</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="features" className="mx-auto max-w-7xl px-4 pb-14">
           <h2 className="text-2xl font-bold md:text-3xl">{t.featuresTitle}</h2>
           <p className="mt-2 text-gray-400">{t.featuresSub}</p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -195,20 +246,50 @@ export default function LandingPage() {
 
         <section className="mx-auto max-w-7xl px-4 pb-14">
           <div className="rounded-2xl border border-green-900/40 bg-zinc-950 p-6">
-            <h2 className="text-2xl font-bold md:text-3xl">{lang === 'bn' ? '৩ ধাপে শুরু করুন' : 'Get started in 3 simple steps'}</h2>
+            <h2 className="text-2xl font-bold md:text-3xl">{lang === 'bn' ? '৩ ধাপে শুরু করুন' : 'Get started in 3 steps'}</h2>
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               {steps.map((step, index) => (
-                <div key={step.title} className="rounded-xl border border-green-900/30 bg-black/40 p-4">
+                <article key={step.title} className="rounded-xl border border-green-900/30 bg-black/40 p-4">
                   <p className="text-xs font-semibold text-green-400">0{index + 1}</p>
                   <h3 className="mt-1 font-semibold">{step.title}</h3>
                   <p className="mt-1 text-sm text-gray-400">{step.desc}</p>
-                </div>
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 pb-16">
+        <section id="pricing" className="mx-auto max-w-7xl px-4 pb-14">
+          <div className="mb-5 flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-bold md:text-3xl">{t.pricingTitle}</h2>
+              <p className="mt-1 text-sm text-gray-400">{t.pricingSub}</p>
+            </div>
+            <Link to="/pricing" className="text-sm text-green-400 hover:text-green-300">{lang === 'bn' ? 'সব প্ল্যান দেখুন' : 'See all plans'}</Link>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {pricingCards.map((plan) => (
+              <article key={plan.name} className="rounded-xl border border-green-900/30 bg-zinc-950 p-5">
+                <h3 className="text-lg font-bold">{plan.name}</h3>
+                <p className="mt-2 text-2xl font-extrabold text-green-400">{plan.price}</p>
+                <ul className="mt-4 space-y-2 text-sm text-gray-300">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
+                      <Check size={15} className="text-green-400" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link to={plan.to} className="mt-5 inline-flex items-center gap-2 rounded-md border border-green-700/40 px-4 py-2 text-sm hover:border-green-500 hover:text-green-300">
+                  {plan.cta} <ArrowRight size={14} />
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="faq" className="mx-auto max-w-7xl px-4 pb-16">
+          <h2 className="mb-5 text-2xl font-bold md:text-3xl">FAQ</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {faqs[lang].map((faq) => (
               <article key={faq.q} className="rounded-xl border border-green-900/30 bg-zinc-950 p-5">
@@ -222,22 +303,19 @@ export default function LandingPage() {
         <section className="border-y border-green-900/40 bg-gradient-to-r from-green-950/30 via-black to-green-950/30">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-10 text-center md:flex-row md:text-left">
             <div>
-              <h2 className="text-2xl font-bold md:text-3xl">{t.ctaTitle} <span className="text-green-400">{t.ctaTitleHighlight}</span></h2>
+              <h2 className="text-2xl font-bold md:text-3xl">
+                {t.ctaTitle} <span className="text-green-400">{t.ctaTitleHighlight}</span>
+              </h2>
               <p className="mt-2 text-gray-300">{t.ctaSub}</p>
             </div>
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-2 rounded-md bg-green-500 px-6 py-3 font-semibold text-black transition hover:bg-green-400"
-            >
+            <Link to="/register" className="inline-flex items-center gap-2 rounded-md bg-green-500 px-6 py-3 font-semibold text-black transition hover:bg-green-400">
               {t.startFree} <ArrowRight size={16} />
             </Link>
           </div>
         </section>
       </main>
 
-      <footer className="px-4 py-8 text-center text-xs text-gray-500">
-        {t.footerMade}
-      </footer>
+      <footer className="px-4 py-8 text-center text-xs text-gray-500">{t.footerMade}</footer>
     </div>
   )
 }
