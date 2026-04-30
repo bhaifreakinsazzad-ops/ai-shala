@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { supabase, authenticateToken } = require('../middleware/auth');
-const { callLLM } = require('./llm');
+const { callLLM, isModelAvailable } = require('./llm');
 
 // List conversations
 router.get('/conversations', authenticateToken, async (req, res) => {
@@ -166,6 +166,12 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
     }));
 
     const activeModel = model || conv.model;
+    if (!isModelAvailable(activeModel)) {
+      return res.status(503).json({
+        error: 'Selected model is not configured on this server',
+        model: activeModel,
+      });
+    }
     let aiContent;
 
     try {

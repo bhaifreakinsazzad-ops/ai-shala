@@ -4,7 +4,7 @@ const runtimeConfig = globalThis as typeof globalThis & {
   __AI_SHALA_API_URL__?: string
 }
 
-const API_URL = runtimeConfig.__AI_SHALA_API_URL__ || 'http://localhost:3001/api'
+const API_URL = runtimeConfig.__AI_SHALA_API_URL__ || '/api'
 
 const api = axios.create({
   baseURL: API_URL,

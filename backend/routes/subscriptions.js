@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { supabase, authenticateToken } = require('../middleware/auth');
+const { getRuntimeConfig } = require('../lib/config');
+
+const config = getRuntimeConfig();
 
 const PLANS = [
   {
@@ -13,7 +16,7 @@ const PLANS = [
     image_daily_limit: 5,
     features: [
       'দৈনিক ৫০টি AI মেসেজ',
-      '৭ দিনের ফ্রি ট্রায়াল',
+      '৭ দিনের ফ্রি ট্রায়াল',
       '২৫+ ফ্রি AI মডেল',
       'দৈনিক ৫টি ছবি তৈরি',
       'সব বেসিক টুলস',
@@ -34,18 +37,18 @@ const PLANS = [
       'আনলিমিটেড AI মেসেজ',
       '৪০+ AI মডেল (সব ফ্রি মডেল)',
       'আনলিমিটেড ছবি তৈরি',
-      'সব প্রিমিয়াম টুলস',
-      'প্রায়োরিটি রেসপন্স',
+      'সব প্রিমিয়াম টুলস',
+      'প্রায়োরিটি রেসপন্স',
       'API অ্যাক্সেস',
       'চ্যাট হিস্ট্রি এক্সপোর্ট',
-      'প্রায়োরিটি সাপোর্ট',
+      'প্রায়োরিটি সাপোর্ট',
     ],
     color: 'green',
     popular: true,
   },
   {
     id: 'premium',
-    name: 'প্রিমিয়াম',
+    name: 'প্রিমিয়াম',
     nameEn: 'Premium',
     price_bdt: 699,
     period: 'month',
@@ -57,13 +60,15 @@ const PLANS = [
       'AI এজেন্ট অ্যাক্সেস',
       'ডেডিকেটেড সাপোর্ট',
       'কাস্টম সিস্টেম প্রম্পট',
-      'ব্যবসায়িক রিপোর্ট',
-      'টিম শেয়ারিং (৩ জন)',
+      'ব্যবসায়িক রিপোর্ট',
+      'টিম শেয়ারিং (৩ জন)',
     ],
     color: 'purple',
     popular: false,
   },
 ];
+
+const PAYMENT_METHODS = new Set(['bkash', 'nagad', 'rocket', 'bank']);
 
 const PAYMENT_INSTRUCTIONS = {
   bkash: {
@@ -72,38 +77,38 @@ const PAYMENT_INSTRUCTIONS = {
     steps: [
       'আপনার bKash অ্যাপ খুলুন',
       '"Send Money" সিলেক্ট করুন',
-      `নম্বর দিন: ${process.env.PAYMENT_PHONE || '01778307704'}`,
+      `নম্বর দিন: ${config.paymentPhone}`,
       'পরিমাণ লিখুন এবং "Confirm" করুন',
       'ট্রানজেকশন আইডি (TrxID) নোট করুন',
       'নিচে ফর্মে TrxID সাবমিট করুন',
     ],
-    number: process.env.PAYMENT_PHONE || '01778307704',
+    number: config.paymentPhone,
     type: 'personal',
   },
   nagad: {
     name: 'Nagad',
     logo: 'https://nagad.com.bd/wp-content/uploads/2021/09/Logo.png',
     steps: [
-      'Nagad অ্যাপ বা *167# ডায়াল করুন',
+      'Nagad অ্যাপ বা *167# ডায়াল করুন',
       '"Send Money" বেছে নিন',
-      `নম্বরে পাঠান: ${process.env.PAYMENT_PHONE || '01778307704'}`,
+      `নম্বরে পাঠান: ${config.paymentPhone}`,
       'পরিমাণ এন্টার করুন ও কনফার্ম করুন',
       'ট্রানজেকশন আইডি সংরক্ষণ করুন',
       'নিচের ফর্মে জমা দিন',
     ],
-    number: process.env.PAYMENT_PHONE || '01778307704',
+    number: config.paymentPhone,
     type: 'personal',
   },
   rocket: {
     name: 'Rocket (DBBL)',
     steps: [
-      '*322# ডায়াল করুন বা Rocket অ্যাপ খুলুন',
+      '*322# ডায়াল করুন বা Rocket অ্যাপ খুলুন',
       '"Send Money" অপশন বেছে নিন',
-      `নম্বর: ${process.env.PAYMENT_PHONE || '01778307704'}`,
-      'পরিমাণ দিয়ে কনফার্ম করুন',
+      `নম্বর: ${config.paymentPhone}`,
+      'পরিমাণ দিয়ে কনফার্ম করুন',
       'TrxID নোট করুন এবং নিচে সাবমিট করুন',
     ],
-    number: process.env.PAYMENT_PHONE || '01778307704',
+    number: config.paymentPhone,
     type: 'personal',
   },
   bank: {
@@ -120,6 +125,15 @@ const PAYMENT_INSTRUCTIONS = {
   },
 };
 
+function getPlan(planId) {
+  return PLANS.find((plan) => plan.id === planId);
+}
+
+function parseAmount(amount) {
+  const parsed = Number.parseFloat(amount);
+  return Number.isFinite(parsed) ? parsed : NaN;
+}
+
 // Get plans
 router.get('/plans', (req, res) => {
   res.json({ plans: PLANS });
@@ -133,7 +147,7 @@ router.get('/payment-methods', (req, res) => {
   }));
   res.json({
     methods,
-    paymentPhone: process.env.PAYMENT_PHONE || '01778307704',
+    paymentPhone: config.paymentPhone,
     note: 'পেমেন্ট করার পর ২-২৪ ঘণ্টার মধ্যে অ্যাকাউন্ট আপগ্রেড হবে।',
   });
 });
@@ -142,25 +156,39 @@ router.get('/payment-methods', (req, res) => {
 router.post('/payment-request', authenticateToken, async (req, res) => {
   try {
     const { plan_id, payment_method, transaction_id, amount, sender_number } = req.body;
+    const normalizedMethod = String(payment_method || '').trim().toLowerCase();
+    const normalizedTransactionId = String(transaction_id || '').trim();
+    const numericAmount = parseAmount(amount);
 
-    if (!plan_id || !payment_method || !transaction_id || !amount) {
-      return res.status(400).json({ error: 'সব তথ্য প্রয়োজন' });
+    if (!plan_id || !normalizedMethod || !normalizedTransactionId || !amount) {
+      return res.status(400).json({ error: 'সব তথ্য প্রয়োজন' });
     }
 
-    const plan = PLANS.find(p => p.id === plan_id);
+    if (!PAYMENT_METHODS.has(normalizedMethod)) {
+      return res.status(400).json({ error: 'Unsupported payment method' });
+    }
+
+    const plan = getPlan(plan_id);
     if (!plan || plan.id === 'free') {
       return res.status(400).json({ error: 'Invalid plan' });
     }
 
-    // Check for duplicate transaction ID
+    if (!Number.isFinite(numericAmount) || numericAmount !== plan.price_bdt) {
+      return res.status(400).json({ error: `Amount must be exactly ${plan.price_bdt} BDT` });
+    }
+
+    if ((normalizedMethod === 'bkash' || normalizedMethod === 'nagad' || normalizedMethod === 'rocket') && !String(sender_number || '').trim()) {
+      return res.status(400).json({ error: 'Sender number is required for mobile payments' });
+    }
+
     const { data: existing } = await supabase
       .from('payment_requests')
       .select('id')
-      .eq('transaction_id', transaction_id)
-      .single();
+      .eq('transaction_id', normalizedTransactionId)
+      .maybeSingle();
 
     if (existing) {
-      return res.status(400).json({ error: 'এই ট্রানজেকশন আইডি আগেই জমা দেওয়া হয়েছে' });
+      return res.status(400).json({ error: 'এই ট্রানজেকশন আইডি আগে জমা দেওয়া হয়েছে' });
     }
 
     const { data: request, error } = await supabase
@@ -171,9 +199,9 @@ router.post('/payment-request', authenticateToken, async (req, res) => {
         user_name: req.user.name,
         plan_id,
         plan_name: plan.name,
-        payment_method,
-        transaction_id: transaction_id.trim(),
-        amount: parseFloat(amount),
+        payment_method: normalizedMethod,
+        transaction_id: normalizedTransactionId,
+        amount: numericAmount,
         sender_number: sender_number || null,
         status: 'pending',
         created_at: new Date().toISOString(),
@@ -184,12 +212,12 @@ router.post('/payment-request', authenticateToken, async (req, res) => {
 
     if (error) {
       console.error('Payment request error:', error);
-      return res.status(500).json({ error: 'পেমেন্ট রিকোয়েস্ট সাবমিট করতে সমস্যা' });
+      return res.status(500).json({ error: 'পেমেন্ট রিকোয়েস্ট সাবমিট করতে সমস্যা' });
     }
 
     res.json({
       success: true,
-      message: 'পেমেন্ট রিকোয়েস্ট পাওয়া গেছে! ২-২৪ ঘণ্টার মধ্যে অ্যাকাউন্ট আপগ্রেড হবে।',
+      message: 'পেমেন্ট রিকোয়েস্ট পাওয়া গেছে! ২-২৪ ঘণ্টার মধ্যে অ্যাকাউন্ট আপগ্রেড হবে।',
       requestId: request.id,
     });
   } catch (err) {

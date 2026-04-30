@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { supabase, authenticateToken } = require('../middleware/auth');
-const { callLLM } = require('./llm');
+const { callLLM, isModelAvailable } = require('./llm');
 
 const DEFAULT_MODEL = 'groq/llama-3.3-70b-versatile';
 
@@ -88,6 +88,12 @@ router.post('/:toolId/run', authenticateToken, async (req, res) => {
 
     const prompt = promptFn(input, options);
     const activeModel = model || DEFAULT_MODEL;
+    if (!isModelAvailable(activeModel)) {
+      return res.status(503).json({
+        error: 'Selected model is not configured on this server',
+        model: activeModel,
+      });
+    }
     const result = await callLLM(activeModel, [{ role: 'user', content: prompt }]);
 
     // Update daily usage

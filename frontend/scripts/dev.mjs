@@ -13,6 +13,10 @@ const port = 5173
 const previewOnly = process.argv.includes('--preview')
 let rebuildTimer = null
 
+if (!process.env.AI_SHALA_API_URL) {
+  process.env.AI_SHALA_API_URL = 'http://localhost:3001/api'
+}
+
 function contentType(filePath) {
   const ext = path.extname(filePath).toLowerCase()
   switch (ext) {

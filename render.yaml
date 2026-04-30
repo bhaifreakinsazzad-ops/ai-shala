@@ -1,20 +1,15 @@
 services:
   - type: web
-    name: ai-shala-backend
+    name: ai-shala
     env: node
     region: singapore
     plan: free
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: node server.js
+    buildCommand: npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend
+    startCommand: node backend/server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3001
-      # Set all secrets in Render dashboard → Environment tab
-      # Do NOT put actual keys here
       - key: JWT_SECRET
         sync: false
       - key: SUPABASE_URL
@@ -27,10 +22,14 @@ services:
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
+      - key: TOGETHER_API_KEY
+        sync: false
       - key: COHERE_API_KEY
         sync: false
-      - key: FRONTEND_URL
-        value: https://powered-by-bhaisazzad.online
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
       - key: PAYMENT_PHONE
         value: "01778307704"
       - key: ADMIN_EMAILS

@@ -18,6 +18,12 @@ const assetsDir = path.join(distDir, 'assets')
 const srcDir = path.join(rootDir, 'src')
 const publicDir = path.join(rootDir, 'public')
 const tempDir = path.join(rootDir, '.tmp-build')
+const runtimeConfigPath = path.join(distDir, 'runtime-config.js')
+
+function resolveApiUrl() {
+  const configured = process.env.AI_SHALA_API_URL || process.env.VITE_API_URL || '/api'
+  return configured.replace(/\/$/, '')
+}
 
 export async function buildProject() {
   await rm(distDir, { recursive: true, force: true })
@@ -27,9 +33,16 @@ export async function buildProject() {
   await buildStyles()
   await buildScripts()
   await copyStaticAssets()
+  await writeRuntimeConfig()
 
   const indexHtml = await readFile(path.join(rootDir, 'index.html'), 'utf8')
   await writeFile(path.join(distDir, 'index.html'), indexHtml, 'utf8')
+}
+
+async function writeRuntimeConfig() {
+  const apiUrl = resolveApiUrl()
+  const runtimeScript = `window.__AI_SHALA_API_URL__ = ${JSON.stringify(apiUrl)};\n`
+  await writeFile(runtimeConfigPath, runtimeScript, 'utf8')
 }
 
 async function buildStyles() {

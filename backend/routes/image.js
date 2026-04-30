@@ -1,24 +1,29 @@
 const express = require('express');
-const router  = express.Router();
-const axios   = require('axios');
+const router = express.Router();
 const { supabase, authenticateToken } = require('../middleware/auth');
 
 const IMAGE_STYLES = {
-  realistic:   'photorealistic, ultra detailed, 8k, professional photography, sharp focus',
-  anime:       'anime style, manga art, vibrant colors, Studio Ghibli inspired, beautiful illustration',
-  cartoon:     'cartoon style, colorful, fun, Disney Pixar inspired, clean lines',
-  oil_painting:'oil painting, classical art, museum quality, detailed brushwork, renaissance style',
-  watercolor:  'watercolor painting, soft colors, artistic, hand-painted, delicate washes',
+  realistic: 'photorealistic, ultra detailed, 8k, professional photography, sharp focus',
+  anime: 'anime style, manga art, vibrant colors, Studio Ghibli inspired, beautiful illustration',
+  cartoon: 'cartoon style, colorful, fun, Disney Pixar inspired, clean lines',
+  oil_painting: 'oil painting, classical art, museum quality, detailed brushwork, renaissance style',
+  watercolor: 'watercolor painting, soft colors, artistic, hand-painted, delicate washes',
   digital_art: 'digital art, concept art, fantasy illustration, trending on ArtStation',
-  sketch:      'pencil sketch, detailed line art, black and white, cross hatching',
+  sketch: 'pencil sketch, detailed line art, black and white, cross hatching',
   bangladeshi: 'Bangladesh traditional art, local culture, rickshaw art style, vibrant colors',
 };
+
+function clampDimension(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(512, Math.min(parsed, 1536));
+}
 
 // Build Pollinations URL — public API, no auth required
 function pollinationsUrl(prompt, style, width, height, seed) {
   const styleEnhancer = IMAGE_STYLES[style] || IMAGE_STYLES.realistic;
-  const fullPrompt    = `${prompt}, ${styleEnhancer}`;
-  const encoded       = encodeURIComponent(fullPrompt);
+  const fullPrompt = `${prompt}, ${styleEnhancer}`;
+  const encoded = encodeURIComponent(fullPrompt);
   return `https://image.pollinations.ai/prompt/${encoded}?width=${width}&height=${height}&seed=${seed}&nologo=true&enhance=true&model=flux`;
 }
 
@@ -37,45 +42,47 @@ router.post('/generate', authenticateToken, async (req, res) => {
     const { prompt, style = 'realistic', width = 1024, height = 1024, seed } = req.body;
     if (!prompt?.trim()) return res.status(400).json({ error: 'Prompt required' });
 
-    const randomSeed = seed || Math.floor(Math.random() * 9999999);
-    const imageUrl   = pollinationsUrl(prompt.trim(), style, width, height, randomSeed);
+    const normalizedStyle = IMAGE_STYLES[style] ? style : 'realistic';
+    const safeWidth = clampDimension(width, 1024);
+    const safeHeight = clampDimension(height, 1024);
+    const randomSeed = Number.isFinite(Number.parseInt(seed, 10)) ? Number.parseInt(seed, 10) : Math.floor(Math.random() * 9999999);
+    const imageUrl = pollinationsUrl(prompt.trim(), normalizedStyle, safeWidth, safeHeight, randomSeed);
 
-    // Track usage
     await supabase.from('users').update({
       image_daily_usage: (user.image_daily_usage || 0) + 1,
       updated_at: new Date().toISOString(),
     }).eq('id', user.id);
 
-    // Save history
     await supabase.from('image_history').insert([{
-      user_id:   user.id,
-      prompt:    prompt.trim(),
-      style,
+      user_id: user.id,
+      prompt: prompt.trim(),
+      style: normalizedStyle,
       image_url: imageUrl,
-      width, height,
+      width: safeWidth,
+      height: safeHeight,
       seed: randomSeed,
       created_at: new Date().toISOString(),
     }]);
 
-    // Log usage
     await supabase.from('usage_logs').insert([{
       user_id: user.id,
-      type:    'image',
-      model:   'pollinations-flux',
+      type: 'image',
+      model: 'pollinations-flux',
       created_at: new Date().toISOString(),
     }]);
 
     res.json({
-      url:            imageUrl,
+      url: imageUrl,
       prompt,
-      enhanced_prompt: `${prompt}, ${IMAGE_STYLES[style] || ''}`,
-      style,
+      enhanced_prompt: `${prompt}, ${IMAGE_STYLES[normalizedStyle] || ''}`,
+      style: normalizedStyle,
       seed: randomSeed,
-      width, height,
+      width: safeWidth,
+      height: safeHeight,
     });
   } catch (err) {
     console.error('Image generation error:', err);
-    res.status(500).json({ error: 'ছবি তৈরিতে সমস্যা হয়েছে' });
+    res.status(500).json({ error: 'ছবি তৈরিতে সমস্যা হয়েছে' });
   }
 });
 
@@ -101,7 +108,7 @@ router.get('/styles', (req, res) => {
   res.json({
     styles: Object.entries(IMAGE_STYLES).map(([id, desc]) => ({
       id,
-      name:        id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      name: id.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
       description: desc.split(',')[0],
     })),
   });

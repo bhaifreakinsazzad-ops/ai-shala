@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
+const { getRuntimeConfig, validateRuntimeConfig } = require('../lib/config');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const config = getRuntimeConfig();
+const runtimeValidation = validateRuntimeConfig(config);
+const supabase = createClient(config.supabaseUrl || 'https://example.supabase.co', config.supabaseServiceKey || 'placeholder-key');
 
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -15,7 +15,14 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (runtimeValidation.missing.length > 0) {
+      return res.status(503).json({
+        error: 'Authentication is not configured',
+        missing: runtimeValidation.missing,
+      });
+    }
+
+    const decoded = jwt.verify(token, config.jwtSecret);
 
     const { data: user, error } = await supabase
       .from('users')
@@ -35,7 +42,7 @@ const authenticateToken = async (req, res, next) => {
 };
 
 const requireAdmin = async (req, res, next) => {
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim());
+  const adminEmails = config.adminEmails;
   if (!req.user || !adminEmails.includes(req.user.email)) {
     return res.status(403).json({ error: 'Admin access required' });
   }

@@ -2,8 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { supabase, authenticateToken, requireAdmin } = require('../middleware/auth');
 
-// All admin routes require authentication + admin role
 router.use(authenticateToken, requireAdmin);
+
+function toPositiveInt(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
 
 // ============ DASHBOARD STATS ============
 
@@ -23,7 +27,6 @@ router.get('/stats', async (req, res) => {
       supabase.from('image_history').select('*', { count: 'exact', head: true }),
     ]);
 
-    // Revenue from approved payments this month
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
@@ -36,7 +39,6 @@ router.get('/stats', async (req, res) => {
 
     const monthlyRevenue = (monthPayments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
 
-    // Recent signups (last 7 days)
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const { count: newUsers } = await supabase
@@ -63,16 +65,17 @@ router.get('/stats', async (req, res) => {
 
 // ============ PAYMENT MANAGEMENT ============
 
-// List all payment requests
 router.get('/payments', async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
+    const pageNumber = toPositiveInt(page, 1);
+    const pageSize = toPositiveInt(limit, 20);
+    const from = (pageNumber - 1) * pageSize;
+    const to = from + pageSize - 1;
 
     let query = supabase
       .from('payment_requests')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(from, to);
 
@@ -81,13 +84,12 @@ router.get('/payments', async (req, res) => {
     const { data: payments, error, count } = await query;
 
     if (error) return res.status(500).json({ error: 'Failed to fetch payments' });
-    res.json({ payments, total: count, page: parseInt(page), limit: parseInt(limit) });
+    res.json({ payments, total: count || 0, page: pageNumber, limit: pageSize });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Approve payment
 router.post('/payments/:id/approve', async (req, res) => {
   try {
     const { id } = req.params;
@@ -104,12 +106,10 @@ router.post('/payments/:id/approve', async (req, res) => {
       return res.status(400).json({ error: 'Payment already processed' });
     }
 
-    // Calculate subscription end date (30 days from now)
     const endsAt = new Date();
     endsAt.setDate(endsAt.getDate() + 30);
 
-    // Update payment status
-    await supabase
+    const { error: updatePaymentError } = await supabase
       .from('payment_requests')
       .update({
         status: 'approved',
@@ -120,7 +120,10 @@ router.post('/payments/:id/approve', async (req, res) => {
       })
       .eq('id', id);
 
-    // Update user subscription
+    if (updatePaymentError) {
+      return res.status(500).json({ error: 'Failed to approve payment' });
+    }
+
     const planLimits = {
       pro: { daily_limit: 999999, image_daily_limit: 999999 },
       premium: { daily_limit: 999999, image_daily_limit: 999999 },
@@ -128,7 +131,7 @@ router.post('/payments/:id/approve', async (req, res) => {
 
     const limits = planLimits[payment.plan_id] || planLimits.pro;
 
-    await supabase
+    const { error: updateUserError } = await supabase
       .from('users')
       .update({
         subscription: payment.plan_id,
@@ -139,9 +142,13 @@ router.post('/payments/:id/approve', async (req, res) => {
       })
       .eq('id', payment.user_id);
 
+    if (updateUserError) {
+      return res.status(500).json({ error: 'Failed to update user subscription' });
+    }
+
     res.json({
       success: true,
-      message: `পেমেন্ট অ্যাপ্রুভ করা হয়েছে। ব্যবহারকারীর ${payment.plan_id} প্ল্যান সক্রিয় হয়েছে।`,
+      message: `পেমেন্ট অ্যাপ্রুভ করা হয়েছে। ব্যবহারকারীর ${payment.plan_id} প্ল্যান সক্রিয় হয়েছে।`,
     });
   } catch (err) {
     console.error('Approve payment error:', err);
@@ -149,7 +156,6 @@ router.post('/payments/:id/approve', async (req, res) => {
   }
 });
 
-// Reject payment
 router.post('/payments/:id/reject', async (req, res) => {
   try {
     const { id } = req.params;
@@ -163,7 +169,7 @@ router.post('/payments/:id/reject', async (req, res) => {
 
     if (!payment) return res.status(404).json({ error: 'Payment not found' });
 
-    await supabase
+    const { error } = await supabase
       .from('payment_requests')
       .update({
         status: 'rejected',
@@ -172,7 +178,9 @@ router.post('/payments/:id/reject', async (req, res) => {
       })
       .eq('id', id);
 
-    res.json({ success: true, message: 'পেমেন্ট রিজেক্ট করা হয়েছে।' });
+    if (error) return res.status(500).json({ error: 'Failed to reject payment' });
+
+    res.json({ success: true, message: 'পেমেন্ট রিজেক্ট করা হয়েছে।' });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -183,8 +191,10 @@ router.post('/payments/:id/reject', async (req, res) => {
 router.get('/users', async (req, res) => {
   try {
     const { page = 1, limit = 20, search, subscription } = req.query;
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
+    const pageNumber = toPositiveInt(page, 1);
+    const pageSize = toPositiveInt(limit, 20);
+    const from = (pageNumber - 1) * pageSize;
+    const to = from + pageSize - 1;
 
     let query = supabase
       .from('users')
@@ -204,7 +214,6 @@ router.get('/users', async (req, res) => {
   }
 });
 
-// Manually upgrade/downgrade user
 router.patch('/users/:id/subscription', async (req, res) => {
   try {
     const { subscription, days = 30 } = req.body;
@@ -214,14 +223,15 @@ router.patch('/users/:id/subscription', async (req, res) => {
       return res.status(400).json({ error: 'Invalid subscription' });
     }
 
-    const endsAt = subscription !== 'free' ? new Date(Date.now() + days * 86400000).toISOString() : null;
+    const durationDays = toPositiveInt(days, 30);
+    const endsAt = subscription !== 'free' ? new Date(Date.now() + durationDays * 86400000).toISOString() : null;
     const limits = {
       free: { daily_limit: 50, image_daily_limit: 5 },
       pro: { daily_limit: 999999, image_daily_limit: 999999 },
       premium: { daily_limit: 999999, image_daily_limit: 999999 },
     };
 
-    await supabase
+    const { error } = await supabase
       .from('users')
       .update({
         subscription,
@@ -232,20 +242,23 @@ router.patch('/users/:id/subscription', async (req, res) => {
       })
       .eq('id', req.params.id);
 
-    res.json({ success: true, message: 'ব্যবহারকারীর সাবস্ক্রিপশন আপডেট হয়েছে' });
+    if (error) return res.status(500).json({ error: 'Failed to update user subscription' });
+
+    res.json({ success: true, message: 'ব্যবহারকারীর সাবস্ক্রিপশন আপডেট হয়েছে' });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Ban/unban user
 router.patch('/users/:id/ban', async (req, res) => {
   try {
     const { banned, reason } = req.body;
-    await supabase
+    const { error } = await supabase
       .from('users')
       .update({ is_banned: banned, ban_reason: reason || null, updated_at: new Date().toISOString() })
       .eq('id', req.params.id);
+
+    if (error) return res.status(500).json({ error: 'Failed to update ban status' });
 
     res.json({ success: true });
   } catch (err) {
@@ -259,7 +272,7 @@ router.get('/analytics', async (req, res) => {
   try {
     const { days = 7 } = req.query;
     const since = new Date();
-    since.setDate(since.getDate() - parseInt(days));
+    since.setDate(since.getDate() - toPositiveInt(days, 7));
 
     const { data: usage } = await supabase
       .from('usage_logs')
@@ -267,13 +280,11 @@ router.get('/analytics', async (req, res) => {
       .gte('created_at', since.toISOString())
       .order('created_at', { ascending: false });
 
-    // Group by type
     const byType = (usage || []).reduce((acc, log) => {
       acc[log.type] = (acc[log.type] || 0) + 1;
       return acc;
     }, {});
 
-    // Top models
     const byModel = (usage || []).reduce((acc, log) => {
       if (log.model) acc[log.model] = (acc[log.model] || 0) + 1;
       return acc;
@@ -284,7 +295,7 @@ router.get('/analytics', async (req, res) => {
       .slice(0, 10)
       .map(([model, count]) => ({ model, count }));
 
-    res.json({ usage: byType, topModels, totalRequests: (usage || []).length, days: parseInt(days) });
+    res.json({ usage: byType, topModels, totalRequests: (usage || []).length, days: toPositiveInt(days, 7) });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
