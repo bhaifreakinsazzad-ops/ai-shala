@@ -55,6 +55,7 @@ function getProviderConfig() {
     groq: !isPlaceholderValue(process.env.GROQ_API_KEY),
     gemini: !isPlaceholderValue(process.env.GEMINI_API_KEY),
     openrouter: !isPlaceholderValue(process.env.OPENROUTER_API_KEY),
+    together: !isPlaceholderValue(process.env.TOGETHER_API_KEY),
     cohere: !isPlaceholderValue(process.env.COHERE_API_KEY),
     openai: !isPlaceholderValue(process.env.OPENAI_API_KEY),
     anthropic: !isPlaceholderValue(process.env.ANTHROPIC_API_KEY),
@@ -64,9 +65,8 @@ function getProviderConfig() {
 function getRuntimeConfig() {
   return {
     appName: process.env.APP_NAME || 'AI Shala',
-    appUrl: process.env.APP_URL || 'http://localhost:5173',
     frontendUrl: normalizeOrigin(process.env.FRONTEND_URL || 'http://localhost:5173'),
-    appUrl: normalizeOrigin(process.env.APP_URL || ''),
+    appUrl: normalizeOrigin(process.env.APP_URL || 'http://localhost:5173'),
     renderExternalUrl: normalizeOrigin(process.env.RENDER_EXTERNAL_URL || ''),
     port: toInt(process.env.PORT, 3001),
     nodeEnv: process.env.NODE_ENV || 'development',

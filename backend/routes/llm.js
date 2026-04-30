@@ -13,12 +13,24 @@ const PROVIDER_KEYS = {
   anthropic: 'ANTHROPIC_API_KEY',
 };
 
+const AUTO_FREE_MODEL = 'auto/free';
+const AUTO_FREE_CANDIDATES = [
+  'groq/llama-3.3-70b-versatile',
+  'groq/llama-3.1-8b-instant',
+  'gemini/gemini-2.0-flash',
+  'openrouter/google/gemma-3-12b-it:free',
+  'openrouter/z-ai/glm-4.5-air:free',
+  'together/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+  'cohere/command-a-03-2025',
+];
+
 function hasProviderAccess(provider) {
   return Boolean(config.providers[provider]);
 }
 
 function isModelAvailable(modelId) {
   const provider = String(modelId || '').split('/')[0];
+  if (modelId === AUTO_FREE_MODEL) return getAutoFreeCandidates().length > 0;
   return Boolean(PROVIDER_KEYS[provider] && hasProviderAccess(provider));
 }
 
@@ -34,44 +46,89 @@ function getProviderStatus() {
   );
 }
 
-/**
- * Central LLM caller supports Groq, Gemini, OpenRouter, Cohere, OpenAI, Anthropic.
- * Model ID format: "provider/model-name"
- */
+function getAutoFreeCandidates() {
+  return AUTO_FREE_CANDIDATES.filter((modelId) => isModelAvailableStrict(modelId));
+}
+
+function isModelAvailableStrict(modelId) {
+  const provider = String(modelId || '').split('/')[0];
+  return Boolean(PROVIDER_KEYS[provider] && hasProviderAccess(provider));
+}
+
+function getFallbackCandidates(modelId) {
+  if (modelId === AUTO_FREE_MODEL) {
+    return getAutoFreeCandidates();
+  }
+
+  if (isModelAvailableStrict(modelId)) {
+    return [modelId, ...getAutoFreeCandidates().filter((candidate) => candidate !== modelId)];
+  }
+
+  return getAutoFreeCandidates();
+}
+
 async function callLLM(modelId, messages, systemPrompt = null) {
-  const parts = String(modelId || '').split('/');
-  const provider = parts[0];
+  const result = await callLLMWithFallback(modelId, messages, systemPrompt);
+  return result.content;
+}
+
+async function callLLMWithFallback(modelId, messages, systemPrompt = null) {
+  const candidates = getFallbackCandidates(modelId);
+
+  if (candidates.length === 0) {
+    throw new Error('No free model providers are currently configured on this server.');
+  }
 
   const allMessages = systemPrompt
     ? [{ role: 'system', content: systemPrompt }, ...messages]
     : messages;
 
-  try {
-    switch (provider) {
-      case 'groq':
-        return await callGroq(parts.slice(1).join('/'), allMessages);
-      case 'gemini':
-        return await callGemini(parts.slice(1).join('/'), allMessages);
-      case 'openrouter':
-        return await callOpenRouter(parts.slice(1).join('/'), allMessages);
-      case 'together':
-        return await callTogether(parts.slice(1).join('/'), allMessages);
-      case 'cohere':
-        return await callCohere(parts.slice(1).join('/'), allMessages);
-      case 'openai':
-        return await callOpenAI(parts.slice(1).join('/'), allMessages);
-      case 'anthropic':
-        return await callAnthropic(parts.slice(1).join('/'), allMessages);
-      default:
-        throw new Error('দুঃখিত, এই মডেলটি সংযুক্ত নয়।');
+  const errors = [];
+  for (const candidate of candidates) {
+    try {
+      const content = await callSingleModel(candidate, allMessages);
+      return {
+        content,
+        modelUsed: candidate,
+        fallbackUsed: candidate !== modelId,
+        fallbackFrom: modelId,
+      };
+    } catch (err) {
+      const message = err?.response?.data?.error?.message
+        || err?.response?.data?.message
+        || err.message
+        || 'Unknown error';
+      errors.push({ model: candidate, message });
+      console.error(`LLM error [${candidate}]:`, err?.response?.data || err.message);
     }
-  } catch (err) {
-    console.error(`LLM error [${modelId}]:`, err?.response?.data || err.message);
-    const msg = err?.response?.data?.error?.message
-      || err?.response?.data?.message
-      || err.message
-      || 'Unknown error';
-    throw new Error(msg);
+  }
+
+  const summary = errors.map((item) => `${item.model}: ${item.message}`).join(' | ');
+  throw new Error(`All model fallbacks failed. ${summary}`);
+}
+
+async function callSingleModel(modelId, messages) {
+  const parts = String(modelId || '').split('/');
+  const provider = parts[0];
+  const providerModel = parts.slice(1).join('/');
+
+  switch (provider) {
+    case 'groq':
+      return callGroq(providerModel, messages);
+    case 'gemini':
+      return callGemini(providerModel, messages);
+    case 'openrouter':
+      return callOpenRouter(providerModel, messages);
+    case 'together':
+      return callTogether(providerModel, messages);
+    case 'cohere':
+      return callCohere(providerModel, messages);
+    case 'openai':
+      return callOpenAI(providerModel, messages);
+    case 'anthropic':
+      return callAnthropic(providerModel, messages);
+    default:
+      throw new Error('Unsupported model provider');
   }
 }
 
@@ -81,7 +138,6 @@ function assertProvider(provider) {
   }
 }
 
-// Groq
 async function callGroq(model, messages) {
   assertProvider('groq');
 
@@ -100,7 +156,6 @@ async function callGroq(model, messages) {
   return response.data.choices[0].message.content;
 }
 
-// Google Gemini
 const GEMINI_MODEL_MAP = {
   'gemini-2.0-flash-exp': 'gemini-2.0-flash',
   'gemini-2.0-flash': 'gemini-2.0-flash',
@@ -134,7 +189,6 @@ async function callGemini(rawModel, messages) {
   return response.data.candidates[0].content.parts[0].text;
 }
 
-// OpenRouter
 async function callOpenRouter(model, messages) {
   assertProvider('openrouter');
 
@@ -155,7 +209,6 @@ async function callOpenRouter(model, messages) {
   return response.data.choices[0].message.content;
 }
 
-// Together AI
 async function callTogether(model, messages) {
   assertProvider('together');
 
@@ -174,7 +227,6 @@ async function callTogether(model, messages) {
   return response.data.choices[0].message.content;
 }
 
-// Cohere
 const COHERE_MODEL_MAP = {
   'command-r': 'command-r-08-2024',
   'command-r-plus': 'command-r-plus-08-2024',
@@ -205,7 +257,6 @@ async function callCohere(rawModel, messages) {
   return response.data.text;
 }
 
-// OpenAI
 const OPENAI_MODEL_MAP = {
   'gpt-4o': 'gpt-4o',
   'gpt-4o-mini': 'gpt-4o-mini',
@@ -230,7 +281,6 @@ async function callOpenAI(rawModel, messages) {
   return response.data.choices[0].message.content;
 }
 
-// Anthropic
 const ANTHROPIC_MODEL_MAP = {
   'claude-3-5-sonnet-20241022': 'claude-3-5-sonnet-20241022',
   'claude-3-haiku-20240307': 'claude-3-haiku-20240307',
@@ -269,7 +319,10 @@ async function callAnthropic(rawModel, messages) {
 }
 
 module.exports = {
+  AUTO_FREE_MODEL,
   callLLM,
+  callLLMWithFallback,
   isModelAvailable,
   getProviderStatus,
+  getAutoFreeCandidates,
 };

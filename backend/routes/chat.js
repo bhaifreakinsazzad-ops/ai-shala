@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { supabase, authenticateToken } = require('../middleware/auth');
-const { callLLM, isModelAvailable } = require('./llm');
+const { AUTO_FREE_MODEL, callLLMWithFallback, isModelAvailable } = require('./llm');
 
 // List conversations
 router.get('/conversations', authenticateToken, async (req, res) => {
@@ -30,7 +30,7 @@ router.post('/conversations', authenticateToken, async (req, res) => {
       .insert([{
         user_id: req.user.id,
         title: title || 'নতুন চ্যাট',
-        model: model || 'groq/llama-3.3-70b-versatile',
+        model: model || AUTO_FREE_MODEL,
         system_prompt: system_prompt || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -165,20 +165,26 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
       content: m.content,
     }));
 
-    const activeModel = model || conv.model;
+    const activeModel = model || conv.model || AUTO_FREE_MODEL;
     if (!isModelAvailable(activeModel)) {
       return res.status(503).json({
         error: 'Selected model is not configured on this server',
         model: activeModel,
       });
     }
-    let aiContent;
+    let llmResult;
 
     try {
-      aiContent = await callLLM(activeModel, contextMessages, conv.system_prompt);
+      llmResult = await callLLMWithFallback(activeModel, contextMessages, conv.system_prompt);
     } catch (llmErr) {
-      aiContent = `দুঃখিত, AI রেসপন্স পেতে সমস্যা হয়েছে: ${llmErr.message}`;
+      llmResult = {
+        content: `দুঃখিত, AI রেসপন্স পেতে সমস্যা হয়েছে: ${llmErr.message}`,
+        modelUsed: activeModel,
+        fallbackUsed: false,
+      };
     }
+    const aiContent = llmResult.content;
+    const usedModel = llmResult.modelUsed || activeModel;
 
     // Save AI response
     const { data: aiMsg, error: aiErr } = await supabase
@@ -187,7 +193,7 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
         conversation_id: req.params.id,
         role: 'assistant',
         content: aiContent,
-        model: activeModel,
+        model: usedModel,
         created_at: new Date().toISOString(),
       }])
       .select()
@@ -218,13 +224,16 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
     await supabase.from('usage_logs').insert([{
       user_id: user.id,
       type: 'chat',
-      model: activeModel,
+      model: usedModel,
       created_at: new Date().toISOString(),
     }]);
 
     res.json({
       userMessage: userMsg,
       assistantMessage: aiMsg,
+      modelRequested: activeModel,
+      modelUsed: usedModel,
+      fallbackUsed: Boolean(llmResult.fallbackUsed),
       dailyUsage: user.subscription === 'free' ? newUsage : null,
       dailyLimit: user.subscription === 'free' ? user.daily_limit : null,
     });

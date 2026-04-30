@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown'
 interface Message { id: string; role: 'user' | 'assistant'; content: string; model?: string; created_at: string }
 interface Conversation { id: string; title: string; model: string; updated_at: string; pinned?: boolean }
 interface Model { id: string; name: string; provider: string; free: boolean }
+const AUTO_MODEL_ID = 'auto/free'
 
 export default function ChatPage() {
   const { conversationId } = useParams()
@@ -20,7 +21,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [activeConv, setActiveConv] = useState<Conversation | null>(null)
   const [models, setModels] = useState<Model[]>([])
-  const [selectedModel, setSelectedModel] = useState('groq/llama-3.3-70b-versatile')
+  const [selectedModel, setSelectedModel] = useState(AUTO_MODEL_ID)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [typing, setTyping] = useState(false)
@@ -42,7 +43,13 @@ export default function ChatPage() {
   const loadModels = async () => {
     try {
       const res = await modelsApi.getAll({ free: true })
-      setModels(res.data.models.filter((m: Model) => m.free))
+      const freeModels = res.data.models.filter((m: Model) => m.free)
+      freeModels.sort((a: Model, b: Model) => {
+        if (a.id === AUTO_MODEL_ID) return -1
+        if (b.id === AUTO_MODEL_ID) return 1
+        return a.name.localeCompare(b.name)
+      })
+      setModels(freeModels)
     } catch {}
   }
 
@@ -51,7 +58,7 @@ export default function ChatPage() {
       const res = await chatApi.getMessages(id)
       setMessages(res.data.messages)
       setActiveConv(res.data.conversation)
-      setSelectedModel(res.data.conversation.model)
+      setSelectedModel(res.data.conversation.model || AUTO_MODEL_ID)
     } catch {}
   }
 
@@ -107,6 +114,11 @@ export default function ChatPage() {
   }
 
   const selectedModelInfo = models.find(m => m.id === selectedModel)
+  const displayModelName = (modelId?: string) => {
+    if (!modelId) return ''
+    if (modelId === AUTO_MODEL_ID) return lang === 'bn' ? 'অটোপাইলট (স্মার্ট)' : 'Autopilot (Smart)'
+    return models.find(m => m.id === modelId)?.name || modelId.split('/').pop() || modelId
+  }
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -178,7 +190,7 @@ export default function ChatPage() {
               className="flex items-center gap-2 text-xs bg-black/40 border border-green-900/30 rounded-lg px-3 py-2 text-gray-300 hover:border-green-500/30 transition-colors"
             >
               <Bot size={14} className="text-green-400" />
-              {selectedModelInfo?.name || selectedModel.split('/').pop()}
+              {selectedModelInfo?.name || displayModelName(selectedModel)}
               <ChevronDown size={12} />
             </button>
             {showModelPicker && (
@@ -195,10 +207,13 @@ export default function ChatPage() {
                         'w-full text-left px-3 py-2.5 flex items-center justify-between hover:bg-white/5 transition-colors',
                         selectedModel === m.id && 'bg-green-500/10 text-green-300'
                       )}
-                    >
+                      >
                       <div>
                         <div className="text-sm font-medium">{m.name}</div>
-                        <div className="text-xs text-gray-500">{m.provider}</div>
+                        <div className="text-xs text-gray-500">
+                          {m.provider}
+                          {m.id === AUTO_MODEL_ID && (lang === 'bn' ? ' · অটো fallback' : ' · Auto fallback')}
+                        </div>
                       </div>
                       {selectedModel === m.id && <div className="w-2 h-2 bg-green-400 rounded-full" />}
                     </button>
@@ -246,7 +261,7 @@ export default function ChatPage() {
                   <p className="text-gray-100 whitespace-pre-wrap">{msg.content}</p>
                 )}
                 <div className="flex items-center justify-between mt-2 gap-4">
-                  <span className="text-xs text-gray-600">{msg.model?.split('/').pop() || ''}</span>
+                  <span className="text-xs text-gray-600">{displayModelName(msg.model)}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-600">{formatDate(msg.created_at)}</span>
                     <button onClick={() => copyToClipboard(msg.content)} className="text-gray-600 hover:text-green-400 transition-colors">

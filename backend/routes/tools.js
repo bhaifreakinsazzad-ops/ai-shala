@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { supabase, authenticateToken } = require('../middleware/auth');
-const { callLLM, isModelAvailable } = require('./llm');
+const { AUTO_FREE_MODEL, callLLMWithFallback, isModelAvailable } = require('./llm');
 
-const DEFAULT_MODEL = 'groq/llama-3.3-70b-versatile';
+const DEFAULT_MODEL = AUTO_FREE_MODEL;
 
 const TOOLS = [
   { id: 'writer', name: 'লেখার সহকারী', nameEn: 'Writing Assistant', icon: '✍️', category: 'writing', description: 'চিঠি, ইমেইল, প্রবন্ধ লিখুন', free: true },
@@ -94,7 +94,9 @@ router.post('/:toolId/run', authenticateToken, async (req, res) => {
         model: activeModel,
       });
     }
-    const result = await callLLM(activeModel, [{ role: 'user', content: prompt }]);
+    const llmResult = await callLLMWithFallback(activeModel, [{ role: 'user', content: prompt }]);
+    const result = llmResult.content;
+    const usedModel = llmResult.modelUsed || activeModel;
 
     // Update daily usage
     if (user.subscription === 'free') {
@@ -109,7 +111,7 @@ router.post('/:toolId/run', authenticateToken, async (req, res) => {
       user_id: user.id,
       type: 'tool',
       tool_id: toolId,
-      model: activeModel,
+      model: usedModel,
       created_at: new Date().toISOString(),
     }]);
 
@@ -119,11 +121,17 @@ router.post('/:toolId/run', authenticateToken, async (req, res) => {
       tool_id: toolId,
       input: input.slice(0, 500),
       output: result.slice(0, 2000),
-      model: activeModel,
+      model: usedModel,
       created_at: new Date().toISOString(),
     }]);
 
-    res.json({ result, tool, model: activeModel });
+    res.json({
+      result,
+      tool,
+      modelRequested: activeModel,
+      modelUsed: usedModel,
+      fallbackUsed: Boolean(llmResult.fallbackUsed),
+    });
   } catch (err) {
     console.error('Tool error:', err);
     res.status(500).json({ error: err.message || 'Tool execution failed' });

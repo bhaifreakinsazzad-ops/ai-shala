@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const { getRuntimeConfig, validateRuntimeConfig } = require('../lib/config');
+const { normalizeUserState } = require('./user-state');
 
 const config = getRuntimeConfig();
 const runtimeValidation = validateRuntimeConfig(config);
@@ -34,7 +35,11 @@ const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    req.user = user;
+    if (user.is_banned) {
+      return res.status(403).json({ error: 'Your account is suspended' });
+    }
+
+    req.user = await normalizeUserState(supabase, user);
     next();
   } catch (err) {
     return res.status(403).json({ error: 'Invalid or expired token' });

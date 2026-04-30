@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const { supabase, authenticateToken } = require('../middleware/auth');
 const { getRuntimeConfig, validateRuntimeConfig } = require('../lib/config');
+const { normalizeUserState } = require('../middleware/user-state');
 
 const config = getRuntimeConfig();
 const runtimeValidation = validateRuntimeConfig(config);
@@ -116,25 +117,16 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'ইমেইল বা পাসওয়ার্ড ভুল' });
     }
 
+    if (user.is_banned) {
+      return res.status(403).json({ error: 'Your account is suspended' });
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ error: 'ইমেইল বা পাসওয়ার্ড ভুল' });
     }
 
-    const lastReset = new Date(user.last_reset_at || 0);
-    const today = new Date();
-    if (lastReset.toDateString() !== today.toDateString()) {
-      await supabase
-        .from('users')
-        .update({
-          daily_usage: 0,
-          image_daily_usage: 0,
-          last_reset_at: today.toISOString()
-        })
-        .eq('id', user.id);
-      user.daily_usage = 0;
-      user.image_daily_usage = 0;
-    }
+    const normalizedUser = await normalizeUserState(supabase, user);
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },
@@ -144,7 +136,7 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      user: sanitizeUser(user)
+      user: sanitizeUser(normalizedUser)
     });
   } catch (err) {
     console.error('Login error:', err);
