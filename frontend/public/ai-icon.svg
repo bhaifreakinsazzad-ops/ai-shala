@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AI Shala">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#00ff41" />
+      <stop offset="100%" stop-color="#00b84a" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#041107" />
+  <circle cx="32" cy="32" r="22" fill="url(#g)" opacity="0.18" />
+  <path d="M20 42L29 22h6l9 20h-5.8l-1.8-4.6h-9.8L25.8 42H20zm11.2-9h6.6l-3.3-8.6-3.3 8.6z" fill="#00ff41" />
+  <path d="M42 24h4v18h-4z" fill="#00ff41" />
+</svg>
