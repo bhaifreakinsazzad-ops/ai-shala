@@ -35,7 +35,7 @@ services:
       - key: PAYMENT_PHONE
         value: "01778307704"
       - key: ADMIN_EMAILS
-        value: admin@yusra.ai
+        value: agenthamoodi@gmail.com
       - key: FREE_TRIAL_DAYS
         value: "7"
       - key: FREE_DAILY_LIMIT
