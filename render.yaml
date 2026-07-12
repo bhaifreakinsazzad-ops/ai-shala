@@ -30,6 +30,8 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: TAVILY_API_KEY
+        sync: false
       - key: PAYMENT_PHONE
         value: "01778307704"
       - key: ADMIN_EMAILS
