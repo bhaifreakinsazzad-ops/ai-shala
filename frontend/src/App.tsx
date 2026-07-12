@@ -5,7 +5,14 @@ import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ChatPage from './pages/ChatPage'
+import VoicePage from './pages/VoicePage'
 import ImagePage from './pages/ImagePage'
+import SlidesPage from './pages/SlidesPage'
+import AudioPage from './pages/AudioPage'
+import MusicPage from './pages/MusicPage'
+import VideoPage from './pages/VideoPage'
+import SearchPage from './pages/SearchPage'
+import ResearchPage from './pages/ResearchPage'
 import ToolsPage from './pages/ToolsPage'
 import PricingPage from './pages/PricingPage'
 import PaymentPage from './pages/PaymentPage'
@@ -46,7 +53,14 @@ function AppRoutes() {
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:conversationId" element={<ChatPage />} />
+        <Route path="/voice" element={<VoicePage />} />
         <Route path="/image" element={<ImagePage />} />
+        <Route path="/video" element={<VideoPage />} />
+        <Route path="/slides" element={<SlidesPage />} />
+        <Route path="/research" element={<ResearchPage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/audio" element={<AudioPage />} />
+        <Route path="/music" element={<MusicPage />} />
         <Route path="/tools" element={<ToolsPage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />

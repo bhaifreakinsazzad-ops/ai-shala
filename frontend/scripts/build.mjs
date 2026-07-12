@@ -8,6 +8,7 @@ import autoprefixer from 'autoprefixer'
 import { rollup } from 'rollup'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
+import replace from '@rollup/plugin-replace'
 import ts from 'typescript'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -62,6 +63,12 @@ async function buildScripts() {
   const bundle = await rollup({
     input: path.join(tempDir, 'main.js'),
     plugins: [
+      replace({
+        preventAssignment: true,
+        values: {
+          'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV === 'production' ? 'production' : 'development'),
+        },
+      }),
       nodeResolve({
         browser: true,
         extensions: ['.mjs', '.js', '.json'],

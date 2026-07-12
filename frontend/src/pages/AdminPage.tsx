@@ -96,7 +96,7 @@ export default function AdminPage() {
             <Shield size={18} className="text-yellow-400" />
             <span className="font-bold text-white">Admin Dashboard</span>
           </div>
-          <span className="text-xs text-gray-600">— AI শালা</span>
+          <span className="text-xs text-gray-600">— Yusra Synthetic Intelligence</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-500">{user?.email}</span>

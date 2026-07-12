@@ -1,11 +1,12 @@
 /**
- * AI SHALA - Bangladesh's First AI Super App
- * Backend API v3.0
+ * YUSRA SYNTHETIC INTELLIGENCE - Bangladesh's First AI Super App
+ * Backend API v4.0
  *
  * Stack: Express.js + Supabase + JWT
  * Free LLMs: Groq, Gemini, OpenRouter, Cohere
  * Paid LLMs: OpenAI, Anthropic
  * Image Gen: Pollinations.ai (free, no key)
+ * Slides: LLM outline + pptxgenjs
  * Payment: Manual bKash/Nagad confirmation
  */
 
@@ -75,6 +76,13 @@ app.use('/api/auth/', rateLimit({
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/image', require('./routes/image'));
+app.use('/api/slides', require('./routes/slides'));
+app.use('/api/documents', require('./routes/documents'));
+app.use('/api/audio', require('./routes/audio'));
+app.use('/api/music', require('./routes/music'));
+app.use('/api/video', require('./routes/video'));
+app.use('/api/search', require('./routes/search'));
+app.use('/api/research', require('./routes/research'));
 app.use('/api/tools', require('./routes/tools'));
 app.use('/api/models', require('./routes/models'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
@@ -83,8 +91,8 @@ app.use('/api/admin', require('./routes/admin'));
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    app: 'AI Shala',
-    version: '3.0.0',
+    app: 'Yusra Synthetic Intelligence',
+    version: '4.0.0',
     timestamp: new Date().toISOString(),
     environment: config.nodeEnv,
     configuredProviders: config.providers,
@@ -152,8 +160,8 @@ if (hasFrontendBuild) {
 } else {
   app.get('/', (req, res) => {
     res.json({
-      name: 'AI Shala API',
-      version: '3.0.0',
+      name: 'Yusra Synthetic Intelligence API',
+      version: '4.0.0',
       description: "Bangladesh's First AI Super App",
       docs: '/api/health',
     });
@@ -180,7 +188,7 @@ app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
-║   AI SHALA BACKEND v3.0                                   ║
+║   YUSRA SYNTHETIC INTELLIGENCE BACKEND v4.0                ║
 ║   Bangladesh's First AI Super App                        ║
 ║                                                            ║
 ║   http://localhost:${PORT}                                ║

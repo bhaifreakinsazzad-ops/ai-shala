@@ -1,4 +1,4 @@
-# AI Shala Backend Deployment
+# Yusra Synthetic Intelligence — Backend Deployment
 
 ## What this backend now expects
 
@@ -13,6 +13,7 @@ Optional AI providers:
 - `GROQ_API_KEY`
 - `GEMINI_API_KEY`
 - `OPENROUTER_API_KEY`
+- `TOGETHER_API_KEY`
 - `COHERE_API_KEY`
 - `OPENAI_API_KEY`
 - `ANTHROPIC_API_KEY`
@@ -26,14 +27,14 @@ Optional AI providers:
 5. Configure your hosting platform to run `npm start` inside `backend/`.
 6. Add a health check to `/api/health`.
 7. Add a readiness check to `/api/ready`.
-8. Create the Supabase tables used by auth, chat, image, tools, subscriptions, and admin analytics.
+8. Create the Supabase tables used by auth, chat, image, slides, audio, tools, subscriptions, and admin analytics (`database/schema.sql`).
 
 ## Sales flow
 
 - Free users can register and use the trial limits.
 - Paid users submit a manual bKash/Nagad/Rocket/bank payment request.
 - Admin approves the request and the backend upgrades the account.
-- Chat, image generation, and tools only work when the needed AI provider key is present.
+- Chat, image generation, slides, audio, and tools only work when the needed AI provider key is present.
 
 ## Useful endpoints
 

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ai-shala
+    name: yusra-synthetic-intelligence
     env: node
     region: singapore
     plan: free
@@ -33,7 +33,7 @@ services:
       - key: PAYMENT_PHONE
         value: "01778307704"
       - key: ADMIN_EMAILS
-        value: admin@aishala.com
+        value: admin@yusra.ai
       - key: FREE_TRIAL_DAYS
         value: "7"
       - key: FREE_DAILY_LIMIT

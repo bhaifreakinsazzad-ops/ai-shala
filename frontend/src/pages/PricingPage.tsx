@@ -55,7 +55,7 @@ export default function PricingPage() {
       <div className="border-b border-green-900/20 glass px-4 py-4 flex items-center justify-between sticky top-0 z-10">
         <Link to="/" className="flex items-center gap-2">
           <span className="text-2xl">🤖</span>
-          <span className="font-bold text-green-400 font-mono">AI Shala</span>
+          <span className="font-bold text-green-400 font-mono">Yusra Synthetic Intelligence</span>
         </Link>
         <div className="flex items-center gap-3">
           <button

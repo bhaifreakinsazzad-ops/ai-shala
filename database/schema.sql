@@ -1,5 +1,5 @@
 -- ============================================================
--- AI SHALA DATABASE SCHEMA v3.0
+-- YUSRA SYNTHETIC INTELLIGENCE - DATABASE SCHEMA v4.0
 -- Bangladesh's First AI Super App
 -- ============================================================
 -- Run this in Supabase SQL Editor:
@@ -107,6 +107,79 @@ CREATE TABLE IF NOT EXISTS tool_history (
 CREATE INDEX IF NOT EXISTS idx_tool_history_user ON tool_history(user_id);
 
 -- ============================================================
+-- SLIDE HISTORY TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS slide_history (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  topic       TEXT NOT NULL,
+  outline     JSONB,
+  file_url    TEXT NOT NULL,
+  slide_count INTEGER DEFAULT 0,
+  model       TEXT,
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_slide_history_user ON slide_history(user_id);
+
+-- ============================================================
+-- AUDIO HISTORY TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS audio_history (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  text        TEXT NOT NULL,
+  voice       TEXT DEFAULT 'default',
+  file_url    TEXT NOT NULL,
+  duration_ms INTEGER,
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audio_history_user ON audio_history(user_id);
+
+-- ============================================================
+-- SEARCH HISTORY TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS search_history (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  query       TEXT NOT NULL,
+  results     JSONB,
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_search_history_user ON search_history(user_id);
+
+-- ============================================================
+-- RESEARCH HISTORY TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS research_history (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  question    TEXT NOT NULL,
+  report      TEXT,
+  sources     JSONB,
+  model       TEXT,
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_research_history_user ON research_history(user_id);
+
+-- ============================================================
+-- DOCUMENT HISTORY TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS document_history (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  topic       TEXT NOT NULL,
+  file_url    TEXT NOT NULL,
+  model       TEXT,
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_document_history_user ON document_history(user_id);
+
+-- ============================================================
 -- PAYMENT REQUESTS TABLE
 -- ============================================================
 CREATE TABLE IF NOT EXISTS payment_requests (
@@ -145,7 +218,7 @@ CREATE INDEX IF NOT EXISTS idx_payments_created ON payment_requests(created_at D
 CREATE TABLE IF NOT EXISTS usage_logs (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  type        TEXT NOT NULL CHECK (type IN ('chat', 'image', 'tool')),
+  type        TEXT NOT NULL CHECK (type IN ('chat', 'image', 'tool', 'slides', 'audio', 'search', 'research', 'document')),
   model       TEXT,
   tool_id     TEXT,
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -165,6 +238,11 @@ ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE image_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tool_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE slide_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audio_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE search_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE research_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE document_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usage_logs ENABLE ROW LEVEL SECURITY;
 
@@ -176,6 +254,11 @@ CREATE POLICY "Service role full access" ON conversations FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON messages FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON image_history FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON tool_history FOR ALL USING (true);
+CREATE POLICY "Service role full access" ON slide_history FOR ALL USING (true);
+CREATE POLICY "Service role full access" ON audio_history FOR ALL USING (true);
+CREATE POLICY "Service role full access" ON search_history FOR ALL USING (true);
+CREATE POLICY "Service role full access" ON research_history FOR ALL USING (true);
+CREATE POLICY "Service role full access" ON document_history FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON payment_requests FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON usage_logs FOR ALL USING (true);
 
@@ -202,7 +285,7 @@ $$ LANGUAGE plpgsql;
 
 -- INSERT INTO users (email, password, name, subscription, daily_limit, image_daily_limit, is_admin)
 -- VALUES (
---   'admin@aishala.com',
+--   'admin@yusra.ai',
 --   '$2a$12$CHANGE_THIS_TO_BCRYPT_HASH',  -- bcrypt hash of your admin password
 --   'Admin',
 --   'premium',

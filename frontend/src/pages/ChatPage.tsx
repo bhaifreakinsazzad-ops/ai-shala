@@ -80,7 +80,6 @@ export default function ChatPage() {
 
   const sendMessage = async () => {
     if (!input.trim() || sending) return
-    if (!conversationId) { await newConversation(); return }
 
     const content = input.trim()
     setInput('')
@@ -92,12 +91,19 @@ export default function ChatPage() {
     setMessages(prev => [...prev, tempUserMsg])
 
     try {
-      const res = await chatApi.sendMessage(conversationId, { content, model: selectedModel })
-      setMessages(prev => [
-        ...prev.filter(m => m.id !== 'temp-user'),
-        res.data.userMessage,
-        res.data.assistantMessage,
-      ])
+      let convId = conversationId
+      if (!convId) {
+        const convRes = await chatApi.createConversation({ model: selectedModel })
+        const conv = convRes.data.conversation
+        setConversations(prev => [conv, ...prev])
+        convId = conv.id
+        navigate(`/chat/${conv.id}`)
+      }
+
+      await chatApi.sendMessage(convId!, { content, model: selectedModel })
+      // Refetch from the server (rather than splicing local state) so this can't
+      // race with the navigation-triggered loadMessages() and double-render.
+      await loadMessages(convId!)
       loadConversations()
       refreshUser()
     } catch (err: any) {

@@ -5,7 +5,7 @@ type Lang = 'bn' | 'en'
 const translations = {
   bn: {
     // Brand
-    brand: 'AI শালা',
+    brand: 'Yusra Synthetic Intelligence',
     tagline: "বাংলাদেশের প্রথম AI সুপার অ্যাপ",
 
     // Nav
@@ -31,7 +31,7 @@ const translations = {
     stat4Label: 'বাংলা সাপোর্ট',
 
     // Features section
-    featuresTitle: 'কেন AI শালা?',
+    featuresTitle: 'কেন Yusra Synthetic Intelligence?',
     featuresSub: 'বাংলাদেশের জন্য বানানো, বাংলায় কথা বলে',
     feat1Title: 'AI চ্যাট',
     feat1Desc: '৪০+ AI মডেল দিয়ে চ্যাট করুন। LLaMA, Gemini, Mistral সব এক জায়গায়।',
@@ -126,7 +126,14 @@ const translations = {
 
     // Layout / Sidebar
     sidebarChat: 'AI চ্যাট',
+    sidebarVoice: 'ভয়েস চ্যাট',
     sidebarImage: 'ছবি তৈরি',
+    sidebarVideo: 'ভিডিও তৈরি',
+    sidebarSlides: 'স্লাইড ও ফাইল',
+    sidebarResearch: 'রিসার্চ',
+    sidebarSearch: 'সার্চ',
+    sidebarAudio: 'অডিও তৈরি',
+    sidebarMusic: 'মিউজিক তৈরি',
     sidebarTools: 'AI টুলস',
     sidebarDashboard: 'ড্যাশবোর্ড',
     sidebarPayment: 'সাবস্ক্রিপশন',
@@ -140,7 +147,7 @@ const translations = {
     // Chat page
     chatNewChat: 'নতুন চ্যাট',
     chatNoConvs: 'কোনো চ্যাট নেই',
-    chatWelcome: 'AI শালায় স্বাগতম!',
+    chatWelcome: 'Yusra Synthetic Intelligence-এ স্বাগতম!',
     chatWelcomeSub: 'একটি নতুন চ্যাট শুরু করুন অথবা নিচের উদাহরণ ব্যবহার করুন',
     chatPrompt1: 'বাংলায় একটি গল্প লিখুন',
     chatPrompt2: 'Python কোড লিখে দিন',
@@ -176,6 +183,76 @@ const translations = {
     imageSizeSquare: 'বর্গ',
     imageSizeLandscape: 'ল্যান্ডস্কেপ',
     imageSizePortrait: 'পোর্ট্রেট',
+
+    slidesTitle: 'AI স্লাইড তৈরি',
+    slidesSubtitle: 'টপিক লিখুন, সম্পূর্ণ প্রেজেন্টেশন (.pptx) তৈরি হবে',
+    slidesPlaceholder: 'প্রেজেন্টেশনের টপিক লিখুন...',
+    slidesCountLabel: 'স্লাইড সংখ্যা',
+    slidesGenerateBtn: 'স্লাইড তৈরি করুন',
+    slidesGenerating: 'তৈরি হচ্ছে...',
+    slidesGeneratingMsg: 'আউটলাইন লেখা হচ্ছে ও স্লাইড বানানো হচ্ছে...',
+    slidesDownload: 'ডাউনলোড (.pptx)',
+    slidesPlaceholderMsg: 'আউটলাইন এখানে দেখাবে',
+    slidesHistory: 'আগের স্লাইডগুলো',
+    slidesLimitReached: 'দৈনিক সীমা শেষ',
+
+    audioTitle: 'AI অডিও তৈরি',
+    audioSubtitle: 'টেক্সট লিখুন, ভয়েসে রূপান্তর করুন — সম্পূর্ণ বিনামূল্যে',
+    audioPlaceholder: 'যে টেক্সট শুনতে চান তা লিখুন...',
+    audioVoiceLabel: 'ভয়েস',
+    audioGenerateBtn: 'অডিও তৈরি করুন',
+    audioGenerating: 'তৈরি হচ্ছে...',
+    audioDownload: 'ডাউনলোড (.mp3)',
+    audioHistory: 'আগের অডিওগুলো',
+    audioLimitReached: 'দৈনিক সীমা শেষ',
+
+    videoTitle: 'AI ভিডিও তৈরি',
+    videoComingSoon: 'শীঘ্রই আসছে',
+    videoComingSoonMsg: 'ভিডিও জেনারেশনের জন্য একটি প্রোভাইডার নির্বাচন ও ফান্ডিং বাকি আছে। বাকি সব ফিচার এখনই ব্যবহার করা যাচ্ছে।',
+
+    musicTitle: 'AI মিউজিক তৈরি',
+    musicComingSoon: 'শীঘ্রই আসছে',
+    musicComingSoonMsg: 'মিউজিক জেনারেশনের জন্য একটি প্রোভাইডার নির্বাচন ও ফান্ডিং বাকি আছে। বাকি সব ফিচার এখনই ব্যবহার করা যাচ্ছে।',
+
+    docGenerateBtn: 'ডকুমেন্ট তৈরি করুন',
+    docDownload: 'ডাউনলোড (.docx)',
+
+    searchTitle: 'ইন্টারনেট সার্চ',
+    searchSubtitle: 'লাইভ ওয়েব থেকে তথ্য খুঁজুন',
+    searchPlaceholder: 'কী খুঁজছেন লিখুন...',
+    searchBtn: 'সার্চ করুন',
+    searchSearching: 'খোঁজা হচ্ছে...',
+    searchAnswer: 'সরাসরি উত্তর',
+    searchResults: 'ফলাফল',
+    searchNoResults: 'কিছু খুঁজে পাওয়া যায়নি',
+    searchNotConfigured: 'সার্চ এখনো চালু হয়নি — সার্ভার কনফিগারেশন বাকি আছে।',
+    searchHistory: 'আগের সার্চগুলো',
+    searchLimitReached: 'দৈনিক সীমা শেষ',
+
+    researchTitle: 'রিসার্চ ও থিংকিং',
+    researchSubtitle: 'একটি প্রশ্ন দিন, ধাপে ধাপে গবেষণা করে সোর্সসহ রিপোর্ট পাবেন',
+    researchPlaceholder: 'গবেষণার প্রশ্ন লিখুন...',
+    researchBtn: 'রিসার্চ শুরু করুন',
+    researchGenerating: 'গবেষণা চলছে...',
+    researchGeneratingMsg: 'প্রশ্ন ভেঙে সার্চ করে রিপোর্ট লেখা হচ্ছে...',
+    researchSubQuestions: 'উপ-প্রশ্নসমূহ',
+    researchSources: 'সোর্স',
+    researchNoSearchNote: 'সার্চ কনফিগার করা নেই — শুধু মডেলের নিজস্ব জ্ঞান থেকে উত্তর দেওয়া হয়েছে।',
+    researchHistory: 'আগের রিসার্চগুলো',
+    researchLimitReached: 'দৈনিক সীমা শেষ',
+    researchPlaceholderMsg: 'রিপোর্ট এখানে দেখাবে',
+
+    voiceTitle: 'ভয়েস চ্যাট',
+    voiceSubtitle: 'কথা বলুন, AI শুনে উত্তর দেবে কণ্ঠে',
+    voiceStart: 'বলা শুরু করুন',
+    voiceStop: 'থামুন',
+    voiceListening: 'শুনছি...',
+    voiceProcessing: 'ভাবছি...',
+    voiceSpeaking: 'বলছি...',
+    voiceTranscriptLabel: 'আপনি বললেন',
+    voiceResponseLabel: 'AI উত্তর',
+    voiceNotSupported: 'আপনার ব্রাউজার ভয়েস ইনপুট সাপোর্ট করে না। Chrome বা Edge ব্যবহার করুন।',
+    voicePlaceholderMsg: 'মাইক্রোফোন বাটনে চাপ দিয়ে কথা বলুন',
 
     // Tools page
     toolsTitle: 'AI টুলস',
@@ -247,7 +324,7 @@ const translations = {
 
   en: {
     // Brand
-    brand: 'AI Shala',
+    brand: 'Yusra Synthetic Intelligence',
     tagline: "Bangladesh's First AI Super App",
 
     // Nav
@@ -273,7 +350,7 @@ const translations = {
     stat4Label: 'Bangla Support',
 
     // Features section
-    featuresTitle: 'Why AI Shala?',
+    featuresTitle: 'Why Yusra Synthetic Intelligence?',
     featuresSub: 'Built for Bangladesh, speaks Bangla',
     feat1Title: 'AI Chat',
     feat1Desc: 'Chat with 40+ AI models. LLaMA, Gemini, Mistral — all in one place.',
@@ -368,7 +445,14 @@ const translations = {
 
     // Layout / Sidebar
     sidebarChat: 'AI Chat',
+    sidebarVoice: 'Voice Chat',
     sidebarImage: 'Image Gen',
+    sidebarVideo: 'Video Gen',
+    sidebarSlides: 'Slides & Files',
+    sidebarResearch: 'Research',
+    sidebarSearch: 'Search',
+    sidebarAudio: 'Audio',
+    sidebarMusic: 'Music Gen',
     sidebarTools: 'AI Tools',
     sidebarDashboard: 'Dashboard',
     sidebarPayment: 'Subscription',
@@ -382,7 +466,7 @@ const translations = {
     // Chat page
     chatNewChat: 'New Chat',
     chatNoConvs: 'No conversations',
-    chatWelcome: 'Welcome to AI Shala!',
+    chatWelcome: 'Welcome to Yusra Synthetic Intelligence!',
     chatWelcomeSub: 'Start a new chat or use an example below',
     chatPrompt1: 'Write a story in Bangla',
     chatPrompt2: 'Write Python code for me',
@@ -418,6 +502,76 @@ const translations = {
     imageSizeSquare: 'Square',
     imageSizeLandscape: 'Landscape',
     imageSizePortrait: 'Portrait',
+
+    slidesTitle: 'AI Slide Generation',
+    slidesSubtitle: 'Give a topic, get a full presentation (.pptx)',
+    slidesPlaceholder: 'Enter the presentation topic...',
+    slidesCountLabel: 'Slide count',
+    slidesGenerateBtn: 'Generate Slides',
+    slidesGenerating: 'Generating...',
+    slidesGeneratingMsg: 'Writing outline and building slides...',
+    slidesDownload: 'Download (.pptx)',
+    slidesPlaceholderMsg: 'Outline will appear here',
+    slidesHistory: 'Previous Slides',
+    slidesLimitReached: 'Daily limit reached',
+
+    audioTitle: 'AI Audio Generation',
+    audioSubtitle: 'Turn text into voice — completely free',
+    audioPlaceholder: 'Enter the text you want to hear...',
+    audioVoiceLabel: 'Voice',
+    audioGenerateBtn: 'Generate Audio',
+    audioGenerating: 'Generating...',
+    audioDownload: 'Download (.mp3)',
+    audioHistory: 'Previous Audio',
+    audioLimitReached: 'Daily limit reached',
+
+    videoTitle: 'AI Video Generation',
+    videoComingSoon: 'Coming Soon',
+    videoComingSoonMsg: 'Video generation still needs a provider selected and funded. Every other feature is available right now.',
+
+    musicTitle: 'AI Music Generation',
+    musicComingSoon: 'Coming Soon',
+    musicComingSoonMsg: 'Music generation still needs a provider selected and funded. Every other feature is available right now.',
+
+    docGenerateBtn: 'Generate Document',
+    docDownload: 'Download (.docx)',
+
+    searchTitle: 'Internet Search',
+    searchSubtitle: 'Find information from the live web',
+    searchPlaceholder: 'What are you looking for...',
+    searchBtn: 'Search',
+    searchSearching: 'Searching...',
+    searchAnswer: 'Direct Answer',
+    searchResults: 'Results',
+    searchNoResults: 'Nothing found',
+    searchNotConfigured: 'Search is not configured yet — server setup is pending.',
+    searchHistory: 'Previous Searches',
+    searchLimitReached: 'Daily limit reached',
+
+    researchTitle: 'Research & Thinking',
+    researchSubtitle: 'Give a question, get a step-by-step researched report with sources',
+    researchPlaceholder: 'Enter your research question...',
+    researchBtn: 'Start Research',
+    researchGenerating: 'Researching...',
+    researchGeneratingMsg: 'Breaking down the question, searching, and writing the report...',
+    researchSubQuestions: 'Sub-questions',
+    researchSources: 'Sources',
+    researchNoSearchNote: 'Search is not configured — answered from the model\'s own knowledge only.',
+    researchHistory: 'Previous Research',
+    researchLimitReached: 'Daily limit reached',
+    researchPlaceholderMsg: 'Report will appear here',
+
+    voiceTitle: 'Voice Chat',
+    voiceSubtitle: 'Speak, and AI listens and replies with voice',
+    voiceStart: 'Start Speaking',
+    voiceStop: 'Stop',
+    voiceListening: 'Listening...',
+    voiceProcessing: 'Thinking...',
+    voiceSpeaking: 'Speaking...',
+    voiceTranscriptLabel: 'You said',
+    voiceResponseLabel: 'AI response',
+    voiceNotSupported: 'Your browser does not support voice input. Try Chrome or Edge.',
+    voicePlaceholderMsg: 'Press the mic button and start talking',
 
     // Tools page
     toolsTitle: 'AI Tools',

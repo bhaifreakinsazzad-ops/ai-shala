@@ -4,7 +4,8 @@ import { useLang } from '../contexts/LanguageContext'
 import { useState } from 'react'
 import {
   MessageSquare, Image, Wrench, CreditCard, LayoutDashboard,
-  LogOut, ChevronLeft, ChevronRight, Shield, Menu
+  LogOut, ChevronLeft, ChevronRight, Shield, Menu,
+  Presentation, Mic, Clapperboard, Globe, BrainCircuit, Music2
 } from 'lucide-react'
 import { cn, getSubscriptionBadge } from '../lib/utils'
 
@@ -17,8 +18,15 @@ export default function Layout() {
 
   const navItems = [
     { to: '/chat', icon: MessageSquare, label: t.sidebarChat },
+    { to: '/voice', icon: Mic, label: t.sidebarVoice },
     { to: '/image', icon: Image, label: t.sidebarImage },
+    { to: '/video', icon: Clapperboard, label: t.sidebarVideo },
     { to: '/tools', icon: Wrench, label: t.sidebarTools },
+    { to: '/slides', icon: Presentation, label: t.sidebarSlides },
+    { to: '/research', icon: BrainCircuit, label: t.sidebarResearch },
+    { to: '/search', icon: Globe, label: t.sidebarSearch },
+    { to: '/audio', icon: Mic, label: t.sidebarAudio },
+    { to: '/music', icon: Music2, label: t.sidebarMusic },
     { to: '/dashboard', icon: LayoutDashboard, label: t.sidebarDashboard },
     { to: '/payment', icon: CreditCard, label: t.sidebarPayment },
   ]
@@ -40,7 +48,7 @@ export default function Layout() {
         {!collapsed && (
           <div>
             <h1 className="font-bold text-green-400 text-lg leading-none font-mono">{t.brand}</h1>
-            <p className="text-xs text-gray-500 mt-0.5">v3.0</p>
+            <p className="text-xs text-gray-500 mt-0.5">v4.0</p>
           </div>
         )}
       </div>

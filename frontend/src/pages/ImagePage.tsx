@@ -73,7 +73,7 @@ export default function ImagePage() {
   const downloadImage = (url: string) => {
     const a = document.createElement('a')
     a.href = url
-    a.download = `ai-shala-${Date.now()}.jpg`
+    a.download = `yusra-${Date.now()}.jpg`
     a.target = '_blank'
     a.click()
   }

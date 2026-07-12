@@ -188,7 +188,7 @@ export default function LandingPage() {
               <Cpu size={24} className="text-green-400 relative icon-glow-green" />
             </div>
             <span className="font-bold text-green-400 text-xl font-mono">{t.brand}</span>
-            <span className="text-xs text-gray-500 hidden sm:block bg-green-900/30 px-1.5 py-0.5 rounded font-mono">v3.0</span>
+            <span className="text-xs text-gray-500 hidden sm:block bg-green-900/30 px-1.5 py-0.5 rounded font-mono">v4.0</span>
           </motion.div>
 
           <motion.nav

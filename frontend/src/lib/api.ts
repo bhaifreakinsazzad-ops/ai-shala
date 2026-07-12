@@ -68,6 +68,45 @@ export const imageApi = {
   getStyles: () => api.get('/image/styles'),
 }
 
+export const slidesApi = {
+  generate: (data: { topic: string; slideCount?: number; model?: string }) =>
+    api.post('/slides/generate', data),
+  getHistory: () => api.get('/slides/history'),
+}
+
+export const documentsApi = {
+  generate: (data: { topic: string; model?: string }) =>
+    api.post('/documents/generate', data),
+  getHistory: () => api.get('/documents/history'),
+}
+
+export const searchApi = {
+  search: (data: { query: string }) => api.post('/search', data),
+  getStatus: () => api.get('/search/status'),
+  getHistory: () => api.get('/search/history'),
+}
+
+export const researchApi = {
+  generate: (data: { question: string; model?: string }) =>
+    api.post('/research/generate', data),
+  getHistory: () => api.get('/research/history'),
+}
+
+export const musicApi = {
+  getStatus: () => api.get('/music/status'),
+}
+
+export const audioApi = {
+  generate: (data: { text: string; voice?: string }) =>
+    api.post('/audio/generate', data),
+  getVoices: () => api.get('/audio/voices'),
+  getHistory: () => api.get('/audio/history'),
+}
+
+export const videoApi = {
+  getStatus: () => api.get('/video/status'),
+}
+
 export const toolsApi = {
   getTools: () => api.get('/tools'),
   runTool: (toolId: string, data: { input: string; options?: Record<string, unknown>; model?: string }) =>

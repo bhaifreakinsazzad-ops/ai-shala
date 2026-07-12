@@ -31,6 +31,7 @@ function isPlaceholderValue(value) {
     'your_cohere_api_key_here',
     'your_openai_api_key_here',
     'your_anthropic_api_key_here',
+    'your_tavily_api_key_here',
     'change-this-to-a-long-random-secret-string-min-32-chars',
     'placeholder-key',
     'example',
@@ -62,9 +63,15 @@ function getProviderConfig() {
   };
 }
 
+function getSearchProviderConfig() {
+  return {
+    tavily: !isPlaceholderValue(process.env.TAVILY_API_KEY),
+  };
+}
+
 function getRuntimeConfig() {
   return {
-    appName: process.env.APP_NAME || 'AI Shala',
+    appName: process.env.APP_NAME || 'Yusra Synthetic Intelligence',
     frontendUrl: normalizeOrigin(process.env.FRONTEND_URL || 'http://localhost:5173'),
     appUrl: normalizeOrigin(process.env.APP_URL || 'http://localhost:5173'),
     renderExternalUrl: normalizeOrigin(process.env.RENDER_EXTERNAL_URL || ''),
@@ -80,6 +87,7 @@ function getRuntimeConfig() {
     adminEmails: splitCsv(process.env.ADMIN_EMAILS),
     allowedOrigins: getAllowedOrigins(),
     providers: getProviderConfig(),
+    searchProviders: getSearchProviderConfig(),
   };
 }
 

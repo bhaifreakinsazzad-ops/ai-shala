@@ -198,8 +198,8 @@ async function callOpenRouter(model, messages) {
     {
       headers: {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'HTTP-Referer': config.frontendUrl || 'https://aishala.com',
-        'X-Title': 'AI Shala Bangladesh',
+        'HTTP-Referer': config.frontendUrl || 'https://yusra.ai',
+        'X-Title': 'Yusra Synthetic Intelligence',
         'Content-Type': 'application/json',
       },
       timeout: 60000,

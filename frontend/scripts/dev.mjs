@@ -85,7 +85,7 @@ function startServer() {
   })
 
   server.listen(port, '0.0.0.0', () => {
-    console.log(`AI Shala frontend running at http://localhost:${port}`)
+    console.log(`Yusra Synthetic Intelligence frontend running at http://localhost:${port}`)
   })
 
   return server

@@ -1,4 +1,4 @@
-# 🤖 AI শালা — সেটআপ গাইড
+# 🤖 Yusra Synthetic Intelligence — সেটআপ গাইড
 
 > Bangladesh's First AI Super App — সম্পূর্ণ বাংলায়
 
@@ -10,7 +10,7 @@
 
 1. **https://supabase.com** এ যান ও ফ্রি অ্যাকাউন্ট করুন
 2. **"New Project"** ক্লিক করুন
-   - Name: `ai-shala`
+   - Name: `yusra-synthetic-intelligence`
    - Password: একটি শক্তিশালী পাসওয়ার্ড দিন
    - Region: `Southeast Asia (Singapore)` বেছে নিন
 3. প্রজেক্ট তৈরি হলে **SQL Editor** এ যান
@@ -30,8 +30,9 @@
 | **OpenRouter** | https://openrouter.ai/keys | `OPENROUTER_API_KEY` |
 | **Together AI** | https://api.together.xyz/settings/api-keys | `TOGETHER_API_KEY` |
 | **Cohere** | https://dashboard.cohere.com/api-keys | `COHERE_API_KEY` |
+| **Tavily** (সার্চ ও রিসার্চ) | https://tavily.com | `TAVILY_API_KEY` |
 
-> 🎨 **ছবি তৈরি (Pollinations.ai)** — কোনো API কী লাগবে না! সম্পূর্ণ বিনামূল্যে।
+> 🎨 **ছবি তৈরি (Pollinations.ai)** ও 🔊 **অডিও (Edge TTS)** — কোনো API কী লাগবে না! সম্পূর্ণ বিনামূল্যে।
 
 ---
 
@@ -39,7 +40,7 @@
 
 #### Backend:
 ```bash
-cd "E:/Ai Super App/backend"
+cd backend
 
 # .env ফাইল তৈরি করুন
 copy .env.example .env
@@ -54,7 +55,7 @@ npm run dev
 
 #### Frontend:
 ```bash
-cd "E:/Ai Super App/frontend"
+cd frontend
 
 # .env ফাইল তৈরি
 copy .env.example .env
@@ -94,7 +95,6 @@ COHERE_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # পেমেন্ট নম্বর
 PAYMENT_PHONE=01778307704
-ADMIN_EMAIL=admin@aishala.com
 ADMIN_EMAILS=আপনার-ইমেইল@gmail.com
 
 FREE_TRIAL_DAYS=7
@@ -135,20 +135,11 @@ FREE_IMAGE_DAILY_LIMIT=5
 
 ### Option A — Render.com (সহজ, বিনামূল্যে)
 
-**Backend:**
+Single service builds and serves both backend + frontend, via `render.yaml`:
 1. https://render.com এ যান
 2. "New Web Service" → GitHub repo connect করুন
-3. Root directory: `backend`
-4. Build command: `npm install`
-5. Start command: `npm start`
-6. Environment variables গুলো add করুন
-
-**Frontend:**
-1. "New Static Site" → same repo
-2. Root directory: `frontend`
-3. Build command: `npm install && npm run build`
-4. Publish directory: `dist`
-5. Add env var: `VITE_API_URL=https://your-backend.onrender.com/api`
+3. Render will read `render.yaml` automatically (root of the repo)
+4. Environment variables গুলো (সব `sync: false` চিহ্নিত) add করুন dashboard-এ
 
 ### Option B — Vercel (Frontend) + Railway (Backend)
 
@@ -161,9 +152,17 @@ Backend → https://railway.app
 
 | ফিচার | বিবরণ |
 |-------|-------|
-| 🤖 AI চ্যাট | ৪০+ ফ্রি মডেল: Groq, Gemini, OpenRouter, Together, Cohere |
+| 🤖 চ্যাট / কথোপকথন | ৭+ ফ্রি প্রোভাইডার: Groq, Gemini, OpenRouter, Together, Cohere + auto-fallback optimizer |
+| 🎙️ ভয়েস চ্যাট | কথা বলুন (browser STT), AI কণ্ঠে উত্তর দেয় (free TTS) |
 | 🎨 ছবি তৈরি | Pollinations.ai — বিনামূল্যে, কোনো API কী নেই |
-| 🛠️ ২০+ টুলস | লেখক, অনুবাদক, কোড, CV, SEO, সোশ্যাল মিডিয়া, কবিতা |
+| 🎬 ভিডিও তৈরি | শীঘ্রই আসছে — প্রোভাইডার নির্বাচন ও ফান্ডিং সাপেক্ষে |
+| 💻 কোড লেখা | Code Generator / Explainer টুলস + সাধারণ চ্যাট |
+| 📊 স্লাইড ও ফাইল | টপিক দিন, .pptx বা .docx ডাউনলোড করুন |
+| 🔬 রিসার্চ ও থিংকিং | প্রশ্ন ভেঙে ধাপে ধাপে ওয়েব সার্চসহ সোর্স-সাইটেড রিপোর্ট |
+| 🌐 ইন্টারনেট সার্চ | Tavily API (ফ্রি ১,০০০/মাস) — লাইভ ওয়েব রেজাল্ট |
+| 🔊 অডিও (TTS) | টেক্সট থেকে ভয়েস — সম্পূর্ণ বিনামূল্যে |
+| 🎵 মিউজিক তৈরি | শীঘ্রই আসছে — প্রোভাইডার নির্বাচন ও ফান্ডিং সাপেক্ষে |
+| 🛠️ ১৮+ টুলস | লেখক, অনুবাদক, কোড, CV, SEO, সোশ্যাল মিডিয়া, কবিতা |
 | 💳 পেমেন্ট | bKash, Nagad, Rocket, ব্যাংক — ম্যানুয়াল কনফার্মেশন |
 | 👑 Admin Panel | পেমেন্ট অ্যাপ্রুভ, ব্যবহারকারী ম্যানেজ, অ্যানালিটিক্স |
 | 🇧🇩 বাংলা | সম্পূর্ণ বাংলা ইন্টারফেস |
@@ -192,4 +191,4 @@ Backend → https://railway.app
 
 ---
 
-*Made with 💚 in Bangladesh — AI শালা v3.0*
+*Made with 💚 in Bangladesh — Yusra Synthetic Intelligence v4.0*
