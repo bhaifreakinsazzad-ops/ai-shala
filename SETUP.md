@@ -30,6 +30,10 @@
 | **OpenRouter** | https://openrouter.ai/keys | `OPENROUTER_API_KEY` |
 | **Together AI** | https://api.together.xyz/settings/api-keys | `TOGETHER_API_KEY` |
 | **Cohere** | https://dashboard.cohere.com/api-keys | `COHERE_API_KEY` |
+| **Cerebras** (আল্ট্রা-ফাস্ট, ~3000 tok/s) | https://cloud.cerebras.ai | `CEREBRAS_API_KEY` |
+| **Hugging Face** | https://huggingface.co/settings/tokens | `HUGGINGFACE_API_KEY` |
+| **LLM7** (কমিউনিটি ফ্রি প্রক্সি) | https://token.llm7.io | `LLM7_API_KEY` |
+| **Cloudflare Workers AI** | https://dash.cloudflare.com | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (দুটোই লাগবে) |
 | **Tavily** (সার্চ ও রিসার্চ) | https://tavily.com | `TAVILY_API_KEY` |
 
 > 🎨 **ছবি তৈরি (Pollinations.ai)** ও 🔊 **অডিও (Edge TTS)** — কোনো API কী লাগবে না! সম্পূর্ণ বিনামূল্যে।

@@ -12,6 +12,8 @@ interface User {
   daily_limit: number
   image_daily_usage: number
   image_daily_limit: number
+  fusion_daily_usage?: number
+  fusion_daily_limit?: number
   is_admin: boolean
   subscription_ends_at?: string
   trial_ends_at?: string

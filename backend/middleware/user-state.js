@@ -26,6 +26,7 @@ async function normalizeUserState(supabase, user) {
   if (!isSameUtcDay(lastReset, now)) {
     updates.daily_usage = 0;
     updates.image_daily_usage = 0;
+    updates.fusion_daily_usage = 0;
     updates.last_reset_at = now.toISOString();
   }
 
@@ -34,6 +35,7 @@ async function normalizeUserState(supabase, user) {
     updates.subscription_ends_at = null;
     updates.daily_limit = config.freeDailyLimit;
     updates.image_daily_limit = config.freeImageDailyLimit;
+    updates.fusion_daily_limit = config.freeFusionDailyLimit;
   }
 
   if (Object.keys(updates).length === 0) {

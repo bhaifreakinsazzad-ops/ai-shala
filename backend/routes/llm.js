@@ -11,6 +11,10 @@ const PROVIDER_KEYS = {
   cohere: 'COHERE_API_KEY',
   openai: 'OPENAI_API_KEY',
   anthropic: 'ANTHROPIC_API_KEY',
+  cerebras: 'CEREBRAS_API_KEY',
+  huggingface: 'HUGGINGFACE_API_KEY',
+  llm7: 'LLM7_API_KEY',
+  cloudflare: 'CLOUDFLARE_API_TOKEN',
 };
 
 const AUTO_FREE_MODEL = 'auto/free';
@@ -86,9 +90,11 @@ async function callLLMWithFallback(modelId, messages, systemPrompt = null) {
   const errors = [];
   for (const candidate of candidates) {
     try {
-      const content = await callSingleModel(candidate, allMessages);
+      const result = await callSingleModel(candidate, allMessages);
       return {
-        content,
+        content: result.content,
+        promptTokens: result.promptTokens,
+        completionTokens: result.completionTokens,
         modelUsed: candidate,
         fallbackUsed: candidate !== modelId,
         fallbackFrom: modelId,
@@ -127,6 +133,14 @@ async function callSingleModel(modelId, messages) {
       return callOpenAI(providerModel, messages);
     case 'anthropic':
       return callAnthropic(providerModel, messages);
+    case 'cerebras':
+      return callCerebras(providerModel, messages);
+    case 'huggingface':
+      return callHuggingFace(providerModel, messages);
+    case 'llm7':
+      return callLLM7(providerModel, messages);
+    case 'cloudflare':
+      return callCloudflare(providerModel, messages);
     default:
       throw new Error('Unsupported model provider');
   }
@@ -136,6 +150,16 @@ function assertProvider(provider) {
   if (!hasProviderAccess(provider)) {
     throw new Error(`${provider} provider is not configured on this server`);
   }
+}
+
+// Rough fallback estimate (~4 chars/token) used only when a provider's response
+// doesn't include real usage counts, so cost tracking always has a number.
+function estimateTokens(text) {
+  return Math.max(1, Math.ceil(String(text || '').length / 4));
+}
+
+function estimateTokensFromMessages(messages) {
+  return estimateTokens(messages.map((m) => m.content).join('\n'));
 }
 
 async function callGroq(model, messages) {
@@ -153,7 +177,11 @@ async function callGroq(model, messages) {
     }
   );
 
-  return response.data.choices[0].message.content;
+  return {
+    content: response.data.choices[0].message.content,
+    promptTokens: response.data.usage?.prompt_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usage?.completion_tokens ?? estimateTokens(response.data.choices[0].message.content),
+  };
 }
 
 const GEMINI_MODEL_MAP = {
@@ -186,7 +214,12 @@ async function callGemini(rawModel, messages) {
   }
 
   const response = await axios.post(url, body, { timeout: 30000 });
-  return response.data.candidates[0].content.parts[0].text;
+  const text = response.data.candidates[0].content.parts[0].text;
+  return {
+    content: text,
+    promptTokens: response.data.usageMetadata?.promptTokenCount ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usageMetadata?.candidatesTokenCount ?? estimateTokens(text),
+  };
 }
 
 async function callOpenRouter(model, messages) {
@@ -206,7 +239,11 @@ async function callOpenRouter(model, messages) {
     }
   );
 
-  return response.data.choices[0].message.content;
+  return {
+    content: response.data.choices[0].message.content,
+    promptTokens: response.data.usage?.prompt_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usage?.completion_tokens ?? estimateTokens(response.data.choices[0].message.content),
+  };
 }
 
 async function callTogether(model, messages) {
@@ -224,7 +261,11 @@ async function callTogether(model, messages) {
     }
   );
 
-  return response.data.choices[0].message.content;
+  return {
+    content: response.data.choices[0].message.content,
+    promptTokens: response.data.usage?.prompt_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usage?.completion_tokens ?? estimateTokens(response.data.choices[0].message.content),
+  };
 }
 
 const COHERE_MODEL_MAP = {
@@ -254,7 +295,11 @@ async function callCohere(rawModel, messages) {
     }
   );
 
-  return response.data.text;
+  return {
+    content: response.data.text,
+    promptTokens: response.data.meta?.billed_units?.input_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.meta?.billed_units?.output_tokens ?? estimateTokens(response.data.text),
+  };
 }
 
 const OPENAI_MODEL_MAP = {
@@ -278,7 +323,11 @@ async function callOpenAI(rawModel, messages) {
     }
   );
 
-  return response.data.choices[0].message.content;
+  return {
+    content: response.data.choices[0].message.content,
+    promptTokens: response.data.usage?.prompt_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usage?.completion_tokens ?? estimateTokens(response.data.choices[0].message.content),
+  };
 }
 
 const ANTHROPIC_MODEL_MAP = {
@@ -315,14 +364,121 @@ async function callAnthropic(rawModel, messages) {
     }
   );
 
-  return response.data.content.map((part) => part.text).join('');
+  const text = response.data.content.map((part) => part.text).join('');
+  return {
+    content: text,
+    promptTokens: response.data.usage?.input_tokens ?? estimateTokensFromMessages(convMsgs),
+    completionTokens: response.data.usage?.output_tokens ?? estimateTokens(text),
+  };
+}
+
+async function callCerebras(model, messages) {
+  assertProvider('cerebras');
+
+  const response = await axios.post(
+    'https://api.cerebras.ai/v1/chat/completions',
+    // Cerebras's flagship model (gpt-oss-120b) is a reasoning model that spends
+    // tokens "thinking" before producing final content — a low budget can leave
+    // message.content empty even on a trivial prompt, so this needs real headroom.
+    { model, messages, max_completion_tokens: 2048 },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.CEREBRAS_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 60000,
+    }
+  );
+
+  const content = response.data.choices[0].message.content;
+  if (!content) {
+    throw new Error('Cerebras returned no content (model likely exhausted its reasoning token budget)');
+  }
+  return {
+    content,
+    promptTokens: response.data.usage?.prompt_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usage?.completion_tokens ?? estimateTokens(content),
+  };
+}
+
+async function callHuggingFace(model, messages) {
+  assertProvider('huggingface');
+
+  const response = await axios.post(
+    'https://router.huggingface.co/v1/chat/completions',
+    { model, messages, max_tokens: 4096 },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 60000,
+    }
+  );
+
+  return {
+    content: response.data.choices[0].message.content,
+    promptTokens: response.data.usage?.prompt_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usage?.completion_tokens ?? estimateTokens(response.data.choices[0].message.content),
+  };
+}
+
+async function callLLM7(model, messages) {
+  assertProvider('llm7');
+
+  const response = await axios.post(
+    'https://api.llm7.io/v1/chat/completions',
+    { model, messages, max_tokens: 4096 },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.LLM7_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 60000,
+    }
+  );
+
+  return {
+    content: response.data.choices[0].message.content,
+    promptTokens: response.data.usage?.prompt_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usage?.completion_tokens ?? estimateTokens(response.data.choices[0].message.content),
+  };
+}
+
+async function callCloudflare(model, messages) {
+  assertProvider('cloudflare');
+
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  // Using Cloudflare's OpenAI-compatible route (/ai/v1/chat/completions) rather than
+  // the native /ai/run/{model} endpoint, since it shares the same request/response
+  // shape as every other provider here — the model id/name is a "@cf/..." string.
+  const response = await axios.post(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`,
+    { model, messages, max_tokens: 4096 },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 60000,
+    }
+  );
+
+  return {
+    content: response.data.choices[0].message.content,
+    promptTokens: response.data.usage?.prompt_tokens ?? estimateTokensFromMessages(messages),
+    completionTokens: response.data.usage?.completion_tokens ?? estimateTokens(response.data.choices[0].message.content),
+  };
 }
 
 module.exports = {
   AUTO_FREE_MODEL,
+  PROVIDER_KEYS,
   callLLM,
   callLLMWithFallback,
+  callSingleModel,
   isModelAvailable,
+  isModelAvailableStrict,
   getProviderStatus,
   getAutoFreeCandidates,
 };

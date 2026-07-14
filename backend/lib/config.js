@@ -32,6 +32,11 @@ function isPlaceholderValue(value) {
     'your_openai_api_key_here',
     'your_anthropic_api_key_here',
     'your_tavily_api_key_here',
+    'your_cerebras_api_key_here',
+    'your_huggingface_api_key_here',
+    'your_llm7_api_key_here',
+    'your_cloudflare_api_token_here',
+    'your_cloudflare_account_id_here',
     'change-this-to-a-long-random-secret-string-min-32-chars',
     'placeholder-key',
     'example',
@@ -60,6 +65,11 @@ function getProviderConfig() {
     cohere: !isPlaceholderValue(process.env.COHERE_API_KEY),
     openai: !isPlaceholderValue(process.env.OPENAI_API_KEY),
     anthropic: !isPlaceholderValue(process.env.ANTHROPIC_API_KEY),
+    cerebras: !isPlaceholderValue(process.env.CEREBRAS_API_KEY),
+    huggingface: !isPlaceholderValue(process.env.HUGGINGFACE_API_KEY),
+    llm7: !isPlaceholderValue(process.env.LLM7_API_KEY),
+    // Cloudflare needs BOTH a scoped API token and an Account ID to be callable.
+    cloudflare: !isPlaceholderValue(process.env.CLOUDFLARE_API_TOKEN) && !isPlaceholderValue(process.env.CLOUDFLARE_ACCOUNT_ID),
   };
 }
 
@@ -84,6 +94,7 @@ function getRuntimeConfig() {
     freeTrialDays: toInt(process.env.FREE_TRIAL_DAYS, 7),
     freeDailyLimit: toInt(process.env.FREE_DAILY_LIMIT, 50),
     freeImageDailyLimit: toInt(process.env.FREE_IMAGE_DAILY_LIMIT, 5),
+    freeFusionDailyLimit: toInt(process.env.FREE_FUSION_DAILY_LIMIT, 3),
     adminEmails: splitCsv(process.env.ADMIN_EMAILS),
     allowedOrigins: getAllowedOrigins(),
     providers: getProviderConfig(),

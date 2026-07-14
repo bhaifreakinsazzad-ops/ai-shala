@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { MotionConfig } from 'framer-motion'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import LandingPage from './pages/LandingPage'
@@ -82,13 +83,15 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <LanguageProvider>
-        <AuthProvider>
-          <div className="matrix-bg" aria-hidden="true" />
-          <AppRoutes />
-        </AuthProvider>
-      </LanguageProvider>
-    </BrowserRouter>
+    <MotionConfig reducedMotion="user">
+      <BrowserRouter>
+        <LanguageProvider>
+          <AuthProvider>
+            <div className="matrix-bg" aria-hidden="true" />
+            <AppRoutes />
+          </AuthProvider>
+        </LanguageProvider>
+      </BrowserRouter>
+    </MotionConfig>
   )
 }

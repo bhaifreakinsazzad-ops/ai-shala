@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { supabase, authenticateToken } = require('../middleware/auth');
-const { AUTO_FREE_MODEL, callLLMWithFallback, isModelAvailable } = require('./llm');
+const { AUTO_FREE_MODEL, callLLMWithFallback, isModelAvailable, isModelAvailableStrict } = require('./llm');
+const { orchestrate, OrchestratorError } = require('../lib/orchestrator');
+const { callCostUsd } = require('../lib/cost');
+
+const MIN_FUSION_MODELS = 2;
+const MAX_FUSION_MODELS = 4;
 
 // List conversations
 router.get('/conversations', authenticateToken, async (req, res) => {
@@ -125,8 +130,36 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
       });
     }
 
-    const { content, model } = req.body;
+    const { content, model, mode: requestedMode, models: requestedModels } = req.body;
     if (!content) return res.status(400).json({ error: 'Message content required' });
+
+    let wantsFusion = requestedMode === 'fuse';
+    let fusionModels = [];
+    let fusionQuotaExceeded = false;
+
+    if (wantsFusion) {
+      if (!Array.isArray(requestedModels) || requestedModels.length < MIN_FUSION_MODELS) {
+        return res.status(400).json({
+          error: `Fusion mode requires at least ${MIN_FUSION_MODELS} models`,
+        });
+      }
+      fusionModels = requestedModels.slice(0, MAX_FUSION_MODELS);
+      const unavailable = fusionModels.filter((m) => !isModelAvailableStrict(m));
+      if (unavailable.length > 0) {
+        return res.status(503).json({
+          error: 'One or more selected models are not configured on this server',
+          unavailable,
+        });
+      }
+
+      const fusionUsage = user.fusion_daily_usage ?? 0;
+      const fusionLimit = user.fusion_daily_limit ?? 3;
+      if (user.subscription === 'free' && fusionUsage >= fusionLimit) {
+        // Quota exhausted — fall back to single-model chat instead of blocking the message.
+        wantsFusion = false;
+        fusionQuotaExceeded = true;
+      }
+    }
 
     // Verify ownership
     const { data: conv } = await supabase
@@ -166,25 +199,61 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
     }));
 
     const activeModel = model || conv.model || AUTO_FREE_MODEL;
-    if (!isModelAvailable(activeModel)) {
+    if (!wantsFusion && !isModelAvailable(activeModel)) {
       return res.status(503).json({
         error: 'Selected model is not configured on this server',
         model: activeModel,
       });
     }
-    let llmResult;
 
-    try {
-      llmResult = await callLLMWithFallback(activeModel, contextMessages, conv.system_prompt);
-    } catch (llmErr) {
-      llmResult = {
-        content: `দুঃখিত, AI রেসপন্স পেতে সমস্যা হয়েছে: ${llmErr.message}`,
-        modelUsed: activeModel,
-        fallbackUsed: false,
-      };
+    let aiContent;
+    let usedModel;
+    let fallbackUsed = false;
+    let orchestration = null; // { mode, modelsUsed, fusionModel, rawResponses, failedModels }
+    let usageEntries = [];
+
+    if (wantsFusion) {
+      try {
+        const result = await orchestrate({
+          models: fusionModels,
+          messages: contextMessages,
+          systemPrompt: conv.system_prompt,
+        });
+        aiContent = result.content;
+        usedModel = result.fused ? result.fusionModel : result.modelsUsed[0];
+        orchestration = {
+          mode: 'fuse',
+          modelsUsed: result.modelsUsed,
+          fusionModel: result.fusionModel,
+          rawResponses: result.rawResponses,
+          failedModels: result.failures,
+        };
+        usageEntries = result.usage;
+      } catch (orchErr) {
+        const failures = orchErr instanceof OrchestratorError ? orchErr.failures : [];
+        aiContent = `দুঃখিত, AI রেসপন্স পেতে সমস্যা হয়েছে (fusion): ${orchErr.message}`;
+        usedModel = fusionModels[0];
+        orchestration = { mode: 'fuse', modelsUsed: [], fusionModel: null, rawResponses: [], failedModels: failures };
+      }
+    } else {
+      let llmResult;
+      try {
+        llmResult = await callLLMWithFallback(activeModel, contextMessages, conv.system_prompt);
+      } catch (llmErr) {
+        llmResult = {
+          content: `দুঃখিত, AI রেসপন্স পেতে সমস্যা হয়েছে: ${llmErr.message}`,
+          modelUsed: activeModel,
+          fallbackUsed: false,
+        };
+      }
+      aiContent = llmResult.content;
+      usedModel = llmResult.modelUsed || activeModel;
+      fallbackUsed = Boolean(llmResult.fallbackUsed);
+      orchestration = { mode: 'single', modelsUsed: [usedModel], fusionModel: null, rawResponses: null, failedModels: null };
+      if (llmResult.promptTokens !== undefined) {
+        usageEntries = [{ modelId: usedModel, callType: 'single', promptTokens: llmResult.promptTokens, completionTokens: llmResult.completionTokens }];
+      }
     }
-    const aiContent = llmResult.content;
-    const usedModel = llmResult.modelUsed || activeModel;
 
     // Save AI response
     const { data: aiMsg, error: aiErr } = await supabase
@@ -194,6 +263,11 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
         role: 'assistant',
         content: aiContent,
         model: usedModel,
+        mode: orchestration.mode,
+        models_used: orchestration.modelsUsed,
+        fusion_model: orchestration.fusionModel,
+        raw_responses: orchestration.rawResponses,
+        failed_models: orchestration.failedModels,
         created_at: new Date().toISOString(),
       }])
       .select()
@@ -201,13 +275,14 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
 
     if (aiErr) return res.status(500).json({ error: 'Failed to save AI response' });
 
-    // Update daily usage for free users
+    // Update daily usage for free users (every message, regardless of mode)
     const newUsage = user.daily_usage + 1;
-    if (user.subscription === 'free') {
-      await supabase
-        .from('users')
-        .update({ daily_usage: newUsage, updated_at: new Date().toISOString() })
-        .eq('id', user.id);
+    const userUpdates = { daily_usage: newUsage, updated_at: new Date().toISOString() };
+    if (orchestration.mode === 'fuse') {
+      userUpdates.fusion_daily_usage = (user.fusion_daily_usage || 0) + 1;
+    }
+    if (user.subscription === 'free' || orchestration.mode === 'fuse') {
+      await supabase.from('users').update(userUpdates).eq('id', user.id);
     }
 
     // Update conversation metadata
@@ -220,22 +295,30 @@ router.post('/conversations/:id/messages', authenticateToken, async (req, res) =
       })
       .eq('id', req.params.id);
 
-    // Log usage
-    await supabase.from('usage_logs').insert([{
+    // Log usage (one row per underlying provider call, with token/cost data when available)
+    const usageRows = (usageEntries.length > 0 ? usageEntries : [{ modelId: usedModel }]).map((u) => ({
       user_id: user.id,
       type: 'chat',
-      model: usedModel,
+      model: u.modelId,
+      prompt_tokens: u.promptTokens ?? null,
+      completion_tokens: u.completionTokens ?? null,
+      cost_usd: u.promptTokens !== undefined ? callCostUsd(u.modelId, u.promptTokens, u.completionTokens) : null,
       created_at: new Date().toISOString(),
-    }]);
+    }));
+    await supabase.from('usage_logs').insert(usageRows);
 
     res.json({
       userMessage: userMsg,
       assistantMessage: aiMsg,
-      modelRequested: activeModel,
+      modelRequested: wantsFusion ? fusionModels : activeModel,
       modelUsed: usedModel,
-      fallbackUsed: Boolean(llmResult.fallbackUsed),
+      fallbackUsed,
+      fused: orchestration.mode === 'fuse',
+      fusionQuotaExceeded,
       dailyUsage: user.subscription === 'free' ? newUsage : null,
       dailyLimit: user.subscription === 'free' ? user.daily_limit : null,
+      fusionDailyUsage: orchestration.mode === 'fuse' ? (user.fusion_daily_usage || 0) + 1 : (user.fusion_daily_usage ?? 0),
+      fusionDailyLimit: user.fusion_daily_limit ?? 3,
     });
   } catch (err) {
     console.error('Send message error:', err);

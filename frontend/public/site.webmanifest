@@ -1,16 +1,36 @@
 {
   "name": "Yusra Synthetic Intelligence",
   "short_name": "Yusra SI",
-  "description": "Bangladesh-first AI super app for chat, image generation and productivity tools.",
-  "start_url": "/",
+  "description": "Bangladesh-first AI super app for chat, multi-model fusion, image generation, and productivity tools.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#000000",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0a",
   "theme_color": "#000000",
+  "lang": "bn",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities", "business"],
   "icons": [
+    { "src": "/ai-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "/ai-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "name": "New Chat",
+      "short_name": "Chat",
+      "url": "/chat?source=pwa_shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Image Generation",
+      "short_name": "Image",
+      "url": "/image?source=pwa_shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

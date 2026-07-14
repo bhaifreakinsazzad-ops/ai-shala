@@ -1,13 +1,15 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLang } from '../contexts/LanguageContext'
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   MessageSquare, Image, Wrench, CreditCard, LayoutDashboard,
   LogOut, ChevronLeft, ChevronRight, Shield, Menu,
-  Presentation, Mic, Clapperboard, Globe, BrainCircuit, Music2
+  Presentation, Mic, Clapperboard, Globe, BrainCircuit, Music2, Download, Check
 } from 'lucide-react'
 import { cn, getSubscriptionBadge } from '../lib/utils'
+import { usePwaInstall } from '../lib/usePwaInstall'
 
 export default function Layout() {
   const { user, logout } = useAuth()
@@ -15,6 +17,8 @@ export default function Layout() {
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { canInstall, isInstalled, promptInstall } = usePwaInstall()
+  const location = useLocation()
 
   const navItems = [
     { to: '/chat', icon: MessageSquare, label: t.sidebarChat },
@@ -44,7 +48,13 @@ export default function Layout() {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className={cn('p-4 border-b border-green-900/30 flex items-center gap-3', collapsed && 'justify-center')}>
-        <span className="text-2xl">🤖</span>
+        <motion.span
+          className="text-2xl inline-block"
+          animate={{ filter: ['drop-shadow(0 0 4px #00ff4160)', 'drop-shadow(0 0 12px #00ff41a0)', 'drop-shadow(0 0 4px #00ff4160)'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          🤖
+        </motion.span>
         {!collapsed && (
           <div>
             <h1 className="font-bold text-green-400 text-lg leading-none font-mono">{t.brand}</h1>
@@ -55,23 +65,32 @@ export default function Layout() {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) => cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group',
-              collapsed ? 'justify-center' : '',
-              isActive
-                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                : 'text-gray-400 hover:text-green-300 hover:bg-white/5'
-            )}
-          >
-            <Icon size={18} className="shrink-0" />
-            {!collapsed && <span className="text-sm font-medium">{label}</span>}
-          </NavLink>
-        ))}
+        {navItems.map(({ to, icon: Icon, label }) => {
+          const isActive = location.pathname === to || (to === '/chat' && location.pathname.startsWith('/chat/'))
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                'relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-200 group',
+                collapsed ? 'justify-center' : '',
+                isActive ? 'text-green-400' : 'text-gray-400 hover:text-green-300'
+              )}
+            >
+              {isActive && (
+                <motion.span
+                  layoutId="sidebar-active-pill"
+                  className="absolute inset-0 rounded-lg bg-green-500/10 border border-green-500/20"
+                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                />
+              )}
+              {!isActive && <span className="absolute inset-0 rounded-lg group-hover:bg-white/5 transition-colors duration-200" />}
+              <Icon size={18} className="shrink-0 relative" />
+              {!collapsed && <span className="text-sm font-medium relative">{label}</span>}
+            </NavLink>
+          )
+        })}
 
         {user?.is_admin && (
           <NavLink
@@ -93,6 +112,23 @@ export default function Layout() {
 
       {/* User info + Language Toggle */}
       <div className="p-3 border-t border-green-900/30 space-y-1">
+        {/* PWA install */}
+        {!collapsed && canInstall && (
+          <button
+            onClick={promptInstall}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-green-300 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-all text-sm font-medium"
+          >
+            <Download size={15} />
+            {t.installApp}
+          </button>
+        )}
+        {!collapsed && isInstalled && (
+          <div className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-gray-500 text-xs">
+            <Check size={13} className="text-green-500" />
+            {t.installedApp}
+          </div>
+        )}
+
         {/* Language toggle */}
         {!collapsed && (
           <button
@@ -159,23 +195,47 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
+        {/* Ambient background — subtle, matches the marketing pages' aurora language */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40" aria-hidden="true">
+          <div className="aurora-orb-1 -top-40 -left-40" style={{ width: 400, height: 400 }} />
+          <div className="aurora-orb-2 -bottom-40 -right-20" style={{ width: 350, height: 350 }} />
+        </div>
+
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between p-4 border-b border-green-900/20 glass">
           <button onClick={() => setMobileOpen(true)} className="text-green-400">
             <Menu size={22} />
           </button>
           <span className="text-green-400 font-bold font-mono">🤖 {t.brand}</span>
-          <button
-            onClick={toggle}
-            className="text-xs text-gray-400 hover:text-green-400 transition-colors"
-          >
-            {lang === 'bn' ? '🇬🇧 EN' : '🇧🇩 বাং'}
-          </button>
+          <div className="flex items-center gap-3">
+            {canInstall && (
+              <button onClick={promptInstall} className="text-green-400" aria-label={t.installApp}>
+                <Download size={18} />
+              </button>
+            )}
+            <button
+              onClick={toggle}
+              className="text-xs text-gray-400 hover:text-green-400 transition-colors"
+            >
+              {lang === 'bn' ? '🇬🇧 EN' : '🇧🇩 বাং'}
+            </button>
+          </div>
         </div>
 
         {/* Page content */}
-        <div className="flex-1 overflow-hidden">
-          <Outlet />
+        <div className="flex-1 overflow-hidden relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="h-full"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>

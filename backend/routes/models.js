@@ -11,7 +11,8 @@ const ALL_MODELS = [
   { id: 'groq/gemma2-9b-it', name: 'Gemma 2 9B', provider: 'Groq', free: true, category: 'chat', contextWindow: 8192, description: "Google's open model" },
   { id: 'groq/mixtral-8x7b-32768', name: 'Mixtral 8x7B', provider: 'Groq', free: true, category: 'chat', contextWindow: 32768, description: 'MoE architecture', badge: '🔀 MoE' },
 
-  { id: 'gemini/gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'Google', free: true, category: 'chat', contextWindow: 1048576, description: 'Fastest Gemini, 1M ctx', badge: '🆕 New' },
+  { id: 'gemini/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'Google', free: true, category: 'chat', contextWindow: 1048576, description: 'Confirmed live — current-gen Gemini', badge: '🆕 New' },
+  { id: 'gemini/gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'Google', free: true, category: 'chat', contextWindow: 1048576, description: 'Fastest Gemini, 1M ctx' },
   { id: 'gemini/gemini-1.5-flash-8b', name: 'Gemini 1.5 Flash 8B', provider: 'Google', free: true, category: 'chat', contextWindow: 1048576, description: 'Lightweight & fast' },
   { id: 'gemini/gemini-1.5-pro', name: 'Gemini 1.5 Pro', provider: 'Google', free: true, category: 'chat', contextWindow: 2097152, description: '2M context window', badge: '🔑 Pro' },
 
@@ -33,6 +34,18 @@ const ALL_MODELS = [
   { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI', free: false, pro: true, category: 'chat', contextWindow: 128000 },
   { id: 'anthropic/claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'Anthropic', free: false, pro: true, category: 'chat', contextWindow: 200000 },
   { id: 'anthropic/claude-3-haiku-20240307', name: 'Claude 3 Haiku', provider: 'Anthropic', free: false, pro: true, category: 'chat', contextWindow: 200000 },
+
+  { id: 'cerebras/gpt-oss-120b', name: 'GPT-OSS 120B', provider: 'Cerebras', free: true, category: 'chat', contextWindow: 128000, description: 'Cerebras hardware — ~3000 tok/s reasoning model', badge: '⚡ 3000 tok/s' },
+  { id: 'cerebras/zai-glm-4.7', name: 'GLM 4.7', provider: 'Cerebras', free: true, category: 'chat', contextWindow: 128000, description: 'Strong coding/agentic model on Cerebras hardware' },
+
+  { id: 'huggingface/meta-llama/Llama-3.1-8B-Instruct:novita', name: 'Llama 3.1 8B (HF)', provider: 'HuggingFace', free: true, category: 'chat', contextWindow: 128000, description: 'Routed via Hugging Face Inference Providers (novita)' },
+
+  { id: 'llm7/codestral-latest', name: 'Codestral (LLM7)', provider: 'LLM7', free: true, category: 'chat', contextWindow: 32000, description: 'Free community-run proxy, strong for code', badge: '🌐 Proxy' },
+  { id: 'llm7/minimax-m2.7', name: 'MiniMax M2.7 (LLM7)', provider: 'LLM7', free: true, category: 'chat', contextWindow: 128000, description: 'Free community-run proxy', badge: '🌐 Proxy' },
+
+  { id: 'cloudflare/@cf/meta/llama-3.3-70b-instruct-fp8-fast', name: 'Llama 3.3 70B (Cloudflare)', provider: 'Cloudflare', free: true, category: 'chat', contextWindow: 24000, description: 'Workers AI — confirmed live' },
+  { id: 'cloudflare/@cf/openai/gpt-oss-120b', name: 'GPT-OSS 120B (Cloudflare)', provider: 'Cloudflare', free: true, category: 'chat', contextWindow: 128000, description: 'Workers AI — confirmed live' },
+  { id: 'cloudflare/@cf/qwen/qwen2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B (Cloudflare)', provider: 'Cloudflare', free: true, category: 'chat', contextWindow: 32000, description: 'Workers AI — confirmed live, strong for code' },
 ];
 
 function decorateModel(model) {
@@ -59,6 +72,10 @@ router.get('/', (req, res) => {
     together: models.filter((m) => m.provider === 'Together'),
     openai: models.filter((m) => m.provider === 'OpenAI'),
     anthropic: models.filter((m) => m.provider === 'Anthropic'),
+    cerebras: models.filter((m) => m.provider === 'Cerebras'),
+    huggingface: models.filter((m) => m.provider === 'HuggingFace'),
+    llm7: models.filter((m) => m.provider === 'LLM7'),
+    cloudflare: models.filter((m) => m.provider === 'Cloudflare'),
     pro: models.filter((m) => m.pro),
   };
 

@@ -124,9 +124,13 @@ router.post('/payments/:id/approve', async (req, res) => {
       return res.status(500).json({ error: 'Failed to approve payment' });
     }
 
+    // Fusion mode costs several times more in tokens than a single-model message
+    // (N fan-out calls + 1 synthesis call), so unlike daily_limit/image_daily_limit
+    // it is NOT set to 999999 for paid tiers — kept generous but bounded to avoid
+    // uncapped real API cost exposure on flat-rate bKash/Nagad plans.
     const planLimits = {
-      pro: { daily_limit: 999999, image_daily_limit: 999999 },
-      premium: { daily_limit: 999999, image_daily_limit: 999999 },
+      pro: { daily_limit: 999999, image_daily_limit: 999999, fusion_daily_limit: 100 },
+      premium: { daily_limit: 999999, image_daily_limit: 999999, fusion_daily_limit: 300 },
     };
 
     const limits = planLimits[payment.plan_id] || planLimits.pro;
@@ -138,6 +142,7 @@ router.post('/payments/:id/approve', async (req, res) => {
         subscription_ends_at: endsAt.toISOString(),
         daily_limit: limits.daily_limit,
         image_daily_limit: limits.image_daily_limit,
+        fusion_daily_limit: limits.fusion_daily_limit,
         updated_at: new Date().toISOString(),
       })
       .eq('id', payment.user_id);
@@ -226,9 +231,9 @@ router.patch('/users/:id/subscription', async (req, res) => {
     const durationDays = toPositiveInt(days, 30);
     const endsAt = subscription !== 'free' ? new Date(Date.now() + durationDays * 86400000).toISOString() : null;
     const limits = {
-      free: { daily_limit: 50, image_daily_limit: 5 },
-      pro: { daily_limit: 999999, image_daily_limit: 999999 },
-      premium: { daily_limit: 999999, image_daily_limit: 999999 },
+      free: { daily_limit: 50, image_daily_limit: 5, fusion_daily_limit: 3 },
+      pro: { daily_limit: 999999, image_daily_limit: 999999, fusion_daily_limit: 100 },
+      premium: { daily_limit: 999999, image_daily_limit: 999999, fusion_daily_limit: 300 },
     };
 
     const { error } = await supabase
@@ -238,6 +243,7 @@ router.patch('/users/:id/subscription', async (req, res) => {
         subscription_ends_at: endsAt,
         daily_limit: limits[subscription].daily_limit,
         image_daily_limit: limits[subscription].image_daily_limit,
+        fusion_daily_limit: limits[subscription].fusion_daily_limit,
         updated_at: new Date().toISOString(),
       })
       .eq('id', req.params.id);

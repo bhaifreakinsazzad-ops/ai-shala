@@ -57,7 +57,7 @@ export const chatApi = {
     api.patch(`/chat/conversations/${id}`, data),
   deleteConversation: (id: string) => api.delete(`/chat/conversations/${id}`),
   getMessages: (id: string) => api.get(`/chat/conversations/${id}/messages`),
-  sendMessage: (id: string, data: { content: string; model?: string }) =>
+  sendMessage: (id: string, data: { content: string; model?: string; mode?: 'single' | 'fuse'; models?: string[] }) =>
     api.post(`/chat/conversations/${id}/messages`, data),
 }
 

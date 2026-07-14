@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import { useLang } from '../contexts/LanguageContext'
 import { authApi, subscriptionApi } from '../lib/api'
@@ -107,12 +108,20 @@ export default function DashboardPage() {
             { label: t.sidebarImage, icon: Image, color: 'text-blue-400', action: '/image', actionLabel: t.dashGenerate },
             { label: t.sidebarTools, icon: Wrench, color: 'text-purple-400', action: '/tools', actionLabel: t.dashUseNow },
             { label: t.dashUpgradeLabel, icon: Crown, color: 'text-yellow-400', action: '/payment', actionLabel: t.dashViewPlans },
-          ].map(({ label, icon: Icon, color, action, actionLabel }) => (
-            <Link key={label} to={action} className="glass-light rounded-xl p-4 border border-green-900/20 hover:border-green-500/30 transition-all group">
-              <Icon size={22} className={cn(color, 'mb-3')} />
-              <p className="font-medium text-gray-300 text-sm">{label}</p>
-              <p className="text-xs text-gray-600 group-hover:text-green-400 transition-colors mt-1">{actionLabel} →</p>
-            </Link>
+          ].map(({ label, icon: Icon, color, action, actionLabel }, i) => (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
+              whileHover={{ y: -3 }}
+            >
+              <Link to={action} className="block glass-light rounded-xl p-4 border border-green-900/20 hover:border-green-500/30 hover:shadow-[0_8px_24px_-8px_rgba(0,255,65,0.25)] transition-all group">
+                <Icon size={22} className={cn(color, 'mb-3')} />
+                <p className="font-medium text-gray-300 text-sm">{label}</p>
+                <p className="text-xs text-gray-600 group-hover:text-green-400 transition-colors mt-1">{actionLabel} →</p>
+              </Link>
+            </motion.div>
           ))}
         </div>
 

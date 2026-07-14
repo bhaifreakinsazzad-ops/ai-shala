@@ -34,6 +34,19 @@ app.set('trust proxy', 1);
 // ============ MIDDLEWARE ============
 
 app.use(helmet({ crossOriginEmbedderPolicy: false }));
+// Static assets (and any same-origin request) must never be blocked by CORS —
+// browsers attach an Origin header even to same-origin `type="module"` script
+// fetches, and without this check the app's own JS bundle gets rejected as
+// cross-origin when frontend+backend are served from one origin (the
+// single-service Render deployment this app actually uses).
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && origin === `${req.protocol}://${req.get('host')}`) {
+    req.headers.origin = undefined;
+  }
+  next();
+});
+
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
@@ -146,10 +159,25 @@ const frontendDist = path.resolve(__dirname, '..', 'frontend', 'dist');
 const frontendIndex = path.join(frontendDist, 'index.html');
 const hasFrontendBuild = fs.existsSync(frontendIndex);
 
+// This build doesn't content-hash output filenames (always /assets/app.js,
+// /assets/app.css) — a long max-age on those would mean a browser NEVER
+// re-checks with the server after the first load, so a new deploy would be
+// invisible to already-visiting users for up to a year. Only cache files
+// whose content genuinely doesn't change (images/icons/fonts) long-term;
+// everything else must always revalidate.
+const LONG_CACHE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.woff', '.woff2', '.ttf']);
+
 if (hasFrontendBuild) {
   app.use(express.static(frontendDist, {
     extensions: ['html'],
-    maxAge: config.nodeEnv === 'production' ? '1y' : 0,
+    setHeaders: (res, filePath) => {
+      const ext = path.extname(filePath).toLowerCase();
+      if (config.nodeEnv === 'production' && LONG_CACHE_EXTENSIONS.has(ext)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    },
   }));
 
   app.get(/^(?!\/api).*/, (req, res, next) => {

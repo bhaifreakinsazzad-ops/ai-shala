@@ -61,6 +61,8 @@ router.post('/register', async (req, res) => {
         daily_limit: config.freeDailyLimit,
         image_daily_usage: 0,
         image_daily_limit: config.freeImageDailyLimit,
+        fusion_daily_usage: 0,
+        fusion_daily_limit: config.freeFusionDailyLimit,
         is_admin: false,
         trial_ends_at: trialEndsAt.toISOString(),
         created_at: new Date().toISOString(),
