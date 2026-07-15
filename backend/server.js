@@ -124,12 +124,21 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/ready', async (req, res) => {
+  // Not a secret — the project URL alone (no key) is already public in
+  // every browser network tab. Surfaced here purely so a deploy-config
+  // mismatch (wrong Supabase project) can be diagnosed via curl, without
+  // needing dashboard access to read back what's actually configured.
+  let configuredSupabaseHost = null;
+  try { configuredSupabaseHost = new URL(config.supabaseUrl).hostname; } catch { configuredSupabaseHost = `unparseable: ${JSON.stringify(config.supabaseUrl)}`; }
+
   const checks = {
     env: {
       ready: runtimeValidation.missing.length === 0,
       missing: runtimeValidation.missing,
     },
     providers: config.providers,
+    configuredSupabaseHost,
+    buildMarker: 'ipv4first-dns-fix-2026-07-15',
   };
 
   if (!checks.env.ready) {
