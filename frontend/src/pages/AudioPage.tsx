@@ -3,7 +3,10 @@ import { audioApi } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useLang } from '../contexts/LanguageContext'
 import { Link } from 'react-router-dom'
-import { Mic, Download, RefreshCw, Lock } from 'lucide-react'
+import { Volume2, Download, RefreshCw, Lock } from 'lucide-react'
+import FeatureHeader from '../components/FeatureHeader'
+
+const ACCENT = '#8B5CF6'
 
 export default function AudioPage() {
   const { user, refreshUser } = useAuth()
@@ -55,31 +58,10 @@ export default function AudioPage() {
   const canGenerate = user?.subscription !== 'free' || (user.daily_usage || 0) < (user.daily_limit || 50)
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6">
+    <div className="h-full flex flex-col">
+      <FeatureHeader icon={Volume2} title={t.audioTitle} subtitle={t.audioSubtitle} accent={ACCENT} />
+      <div className="flex-1 overflow-y-auto p-4 md:p-5">
       <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Mic className="text-green-400" size={24} />
-            {t.audioTitle}
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">{t.audioSubtitle}</p>
-        </div>
-
-        {user?.subscription === 'free' && (
-          <div className="glass-light rounded-xl p-4 mb-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-300">
-                {user.daily_usage}/{user.daily_limit}
-              </p>
-              <div className="h-1 bg-gray-800 rounded-full w-40 mt-2">
-                <div className="h-full bg-green-500 rounded-full" style={{ width: `${((user.daily_usage || 0) / (user.daily_limit || 50)) * 100}%` }} />
-              </div>
-            </div>
-            <Link to="/payment" className="text-xs text-green-400 border border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-500/10 transition-colors">
-              →
-            </Link>
-          </div>
-        )}
 
         <div className="space-y-5">
           <textarea
@@ -87,7 +69,10 @@ export default function AudioPage() {
             onChange={e => setText(e.target.value)}
             rows={5}
             maxLength={2000}
-            className="w-full bg-black/50 border border-green-900/30 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/40 resize-none transition-colors"
+            className="w-full bg-black/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none resize-none transition-colors"
+            style={{ border: `1px solid rgba(255,255,255,0.07)` }}
+            onFocus={e => { e.target.style.borderColor = `${ACCENT}40` }}
+            onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.07)' }}
             placeholder={t.audioPlaceholder}
           />
           <p className="text-xs text-gray-600 text-right">{text.length}/2000</p>
@@ -99,11 +84,10 @@ export default function AudioPage() {
                 <button
                   key={v.id}
                   onClick={() => setVoice(v.id)}
-                  className={`py-2 px-3 rounded-lg border text-xs transition-all ${
-                    voice === v.id
-                      ? 'border-green-500/50 bg-green-500/10 text-green-300'
-                      : 'border-green-900/20 text-gray-500 hover:border-green-900/40'
-                  }`}
+                  className="py-2 px-3 rounded-lg border text-xs transition-all"
+                  style={voice === v.id ? {
+                    borderColor: `${ACCENT}50`, background: `${ACCENT}12`, color: ACCENT,
+                  } : { borderColor: 'rgba(255,255,255,0.07)', color: '#6b7280' }}
                 >
                   {v.label}
                 </button>
@@ -116,21 +100,24 @@ export default function AudioPage() {
           <button
             onClick={generate}
             disabled={!text.trim() || generating || !canGenerate}
-            className="btn-green w-full py-3 flex items-center justify-center gap-2 disabled:opacity-40"
+            className="w-full py-3 flex items-center justify-center gap-2 disabled:opacity-40 rounded-xl font-semibold text-black transition-opacity"
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, #059669)` }}
           >
             {generating ? (
               <><RefreshCw size={18} className="animate-spin" /> {t.audioGenerating}</>
             ) : !canGenerate ? (
               <><Lock size={18} /> {t.audioLimitReached}</>
             ) : (
-              <><Mic size={18} /> {t.audioGenerateBtn}</>
+              <><Volume2 size={18} /> {t.audioGenerateBtn}</>
             )}
           </button>
 
           {result && (
-            <div className="rounded-xl border border-green-900/20 bg-black/40 p-4 space-y-3">
+            <div className="rounded-xl bg-black/40 p-4 space-y-3" style={{ border: `1px solid ${ACCENT}20` }}>
               <audio controls src={result.fileUrl} className="w-full" />
-              <a href={result.fileUrl} download className="btn-green w-full py-2.5 flex items-center justify-center gap-2">
+              <a href={result.fileUrl} download
+                className="w-full py-2.5 flex items-center justify-center gap-2 rounded-xl font-semibold text-black"
+                style={{ background: `linear-gradient(135deg, ${ACCENT}, #059669)` }}>
                 <Download size={18} /> {t.audioDownload}
               </a>
             </div>
@@ -142,7 +129,7 @@ export default function AudioPage() {
             <h2 className="text-lg font-bold text-gray-300 mb-4">{t.audioHistory}</h2>
             <div className="space-y-2">
               {history.map(item => (
-                <div key={item.id} className="rounded-xl border border-green-900/10 p-3">
+                <div key={item.id} className="rounded-xl p-3" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-gray-300 text-sm mb-2 line-clamp-2">{item.text}</p>
                   <audio controls src={item.file_url} className="w-full h-8" />
                 </div>
@@ -150,6 +137,7 @@ export default function AudioPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

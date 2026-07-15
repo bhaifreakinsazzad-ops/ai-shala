@@ -3,8 +3,11 @@ import { imageApi } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useLang } from '../contexts/LanguageContext'
 import { Link } from 'react-router-dom'
-import { Sparkles, Download, RefreshCw, ZoomIn, Lock } from 'lucide-react'
+import { Sparkles, Download, RefreshCw, ZoomIn, Lock, Image as ImageIcon } from 'lucide-react'
 import { cn } from '../lib/utils'
+import FeatureHeader from '../components/FeatureHeader'
+
+const ACCENT = '#A855F7'
 
 const EXAMPLE_PROMPTS = [
   'পদ্মা নদীর তীরে সূর্যাস্তের দৃশ্য',
@@ -82,33 +85,31 @@ export default function ImagePage() {
   const size = SIZES[sizeIndex]
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Sparkles className="text-green-400" size={24} />
-            {t.imageTitle}
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">{t.imageSubtitle}</p>
-        </div>
-
-        {/* Usage warning */}
-        {user?.subscription === 'free' && (
-          <div className="glass-light rounded-xl p-4 mb-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-300">
-                {t.imageTodayCount}: <span className="text-green-400 font-bold">{user.image_daily_usage}/{user.image_daily_limit}</span>
-              </p>
-              <div className="h-1 bg-gray-800 rounded-full w-40 mt-2">
-                <div className="h-full bg-green-500 rounded-full" style={{ width: `${((user.image_daily_usage || 0) / (user.image_daily_limit || 5)) * 100}%` }} />
+    <div className="h-full flex flex-col">
+      <FeatureHeader
+        icon={ImageIcon}
+        title={t.imageTitle}
+        subtitle={t.imageSubtitle}
+        accent={ACCENT}
+        right={
+          user?.subscription === 'free' ? (
+            <div className="flex items-center gap-2.5">
+              <div className="text-[11px] font-medium" style={{ color: ACCENT }}>
+                {user.image_daily_usage}/{user.image_daily_limit}
+              </div>
+              <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                <div className="h-full rounded-full" style={{
+                  width: `${((user.image_daily_usage || 0) / (user.image_daily_limit || 5)) * 100}%`,
+                  background: ACCENT,
+                }} />
               </div>
             </div>
-            <Link to="/payment" className="text-xs text-green-400 border border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-500/10 transition-colors">
-              {t.imageGetUnlimited} →
-            </Link>
-          </div>
-        )}
+          ) : undefined
+        }
+      />
+      <div className="flex-1 overflow-y-auto p-4 md:p-5">
+      <div className="max-w-5xl mx-auto">
+
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Controls */}
@@ -128,7 +129,8 @@ export default function ImagePage() {
                   <button
                     key={p}
                     onClick={() => setPrompt(p)}
-                    className="text-xs bg-green-900/20 border border-green-900/30 rounded-lg px-2.5 py-1.5 text-gray-400 hover:text-green-300 transition-colors"
+                    className="text-xs rounded-lg px-2.5 py-1.5 text-slate-500 hover:text-purple-300 transition-colors"
+                    style={{ background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.12)' }}
                   >
                     {p}
                   </button>
@@ -147,8 +149,8 @@ export default function ImagePage() {
                     className={cn(
                       'flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-xs transition-all',
                       style === s.id
-                        ? 'border-green-500/50 bg-green-500/10 text-green-300'
-                        : 'border-green-900/20 text-gray-500 hover:border-green-900/40'
+                        ? 'border-purple-500/50 bg-purple-500/10 text-purple-300'
+                        : 'border-white/6 text-slate-500 hover:border-white/12'
                     )}
                   >
                     <span className="text-xl">{s.emoji}</span>
@@ -169,8 +171,8 @@ export default function ImagePage() {
                     className={cn(
                       'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs transition-all',
                       sizeIndex === idx
-                        ? 'border-green-500/50 bg-green-500/10 text-green-300'
-                        : 'border-green-900/20 text-gray-500 hover:border-green-900/40'
+                        ? 'border-purple-500/50 bg-purple-500/10 text-purple-300'
+                        : 'border-white/6 text-slate-500 hover:border-white/12'
                     )}
                   >
                     <span>{s.icon}</span> {s.label}
@@ -184,7 +186,8 @@ export default function ImagePage() {
             <button
               onClick={generate}
               disabled={!prompt.trim() || generating || !canGenerate}
-              className="btn-green w-full py-3 flex items-center justify-center gap-2 disabled:opacity-40"
+              className="w-full py-3 flex items-center justify-center gap-2 disabled:opacity-40 rounded-xl font-semibold text-sm transition-all"
+              style={{ background: 'linear-gradient(135deg, #A855F7, #7C3AED)', color: '#fff', boxShadow: '0 0 20px rgba(168,85,247,0.25)' }}
             >
               {generating ? (
                 <><RefreshCw size={18} className="animate-spin" /> {t.imageGenerating}</>
@@ -256,6 +259,7 @@ export default function ImagePage() {
           <img src={fullscreen} alt="fullscreen" className="max-w-full max-h-full rounded-xl object-contain" />
         </div>
       )}
+      </div>
     </div>
   )
 }

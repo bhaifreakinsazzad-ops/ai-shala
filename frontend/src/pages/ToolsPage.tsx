@@ -3,9 +3,12 @@ import { toolsApi } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useLang } from '../contexts/LanguageContext'
 import { Link } from 'react-router-dom'
-import { Wrench, Play, Copy, Lock } from 'lucide-react'
+import { Code2, Play, Copy, Lock } from 'lucide-react'
 import { cn, copyToClipboard } from '../lib/utils'
 import ReactMarkdown from 'react-markdown'
+import FeatureHeader from '../components/FeatureHeader'
+
+const ACCENT = '#22C55E'
 
 interface Tool { id: string; name: string; nameEn: string; icon: string; category: string; description: string; free: boolean }
 
@@ -130,14 +133,12 @@ export default function ToolsPage() {
   }
 
   return (
-    <div className="h-full flex overflow-hidden">
+    <div className="h-full flex flex-col">
+      <FeatureHeader icon={Code2} title={t.toolsTitle} subtitle={t.toolsSubtitle} accent={ACCENT} />
+      <div className="flex-1 flex overflow-hidden">
       {/* Tools list */}
-      <div className="hidden md:flex flex-col w-64 xl:w-72 border-r border-green-900/20 glass overflow-hidden">
-        <div className="p-3 border-b border-green-900/20">
-          <h2 className="text-sm font-bold text-green-400 flex items-center gap-2">
-            <Wrench size={16} /> {t.toolsTitle}
-          </h2>
-        </div>
+      <div className="hidden md:flex flex-col w-64 xl:w-72 border-r glass overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+        <div className="p-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         {/* Category filter */}
         <div className="px-3 py-2 flex gap-1.5 flex-wrap border-b border-green-900/20">
           <button
@@ -269,6 +270,7 @@ export default function ToolsPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

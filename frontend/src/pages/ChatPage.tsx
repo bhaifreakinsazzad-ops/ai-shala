@@ -8,6 +8,8 @@ import { Send, Plus, Trash2, MessageSquare, Copy, ChevronDown, Bot, User, Sparkl
 import { cn, formatDate, copyToClipboard } from '../lib/utils'
 import ReactMarkdown from 'react-markdown'
 
+const ACCENT = '#00D4AA'
+
 interface RawModelResponse { modelId: string; content: string }
 interface FailedModel { modelId: string; error: string }
 interface Message {
@@ -172,9 +174,11 @@ export default function ChatPage() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* Conversations sidebar */}
-      <div className="hidden lg:flex flex-col w-64 xl:w-72 border-r border-green-900/20 glass overflow-hidden">
-        <div className="p-3 border-b border-green-900/20">
-          <button onClick={newConversation} className="btn-green w-full flex items-center justify-center gap-2 py-2.5 text-sm">
+      <div className="hidden lg:flex flex-col w-64 xl:w-72 glass overflow-hidden" style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="p-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <button onClick={newConversation}
+            className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl text-black transition-opacity hover:opacity-90"
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, #059669)` }}>
             <Plus size={16} /> {t.chatNewChat}
           </button>
         </div>
@@ -191,10 +195,11 @@ export default function ChatPage() {
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/chat/${conv.id}`) } }}
               className={cn(
                 'w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between group transition-all cursor-pointer',
-                conversationId === conv.id
-                  ? 'bg-green-500/10 border border-green-500/20 text-green-300'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                conversationId === conv.id ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
               )}
+              style={conversationId === conv.id ? {
+                background: `${ACCENT}12`, border: `1px solid ${ACCENT}25`,
+              } : {}}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <MessageSquare size={14} className="shrink-0 opacity-60" />
@@ -212,7 +217,7 @@ export default function ChatPage() {
         </div>
         {/* Usage bar */}
         {user?.subscription === 'free' && (
-          <div className="p-3 border-t border-green-900/20 space-y-3">
+          <div className="p-3 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1.5">
                 <span>{t.chatToday}</span>
@@ -220,8 +225,8 @@ export default function ChatPage() {
               </div>
               <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${Math.min(100, (user.daily_usage / user.daily_limit) * 100)}%` }}
+                  className="h-full rounded-full transition-all"
+                  style={{ width: `${Math.min(100, (user.daily_usage / user.daily_limit) * 100)}%`, background: ACCENT }}
                 />
               </div>
             </div>
@@ -246,9 +251,9 @@ export default function ChatPage() {
       {/* Chat area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-green-900/20 glass-light shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 glass-light shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-green-400 font-medium text-sm truncate max-w-[200px]">
+            <span className="font-medium text-sm truncate max-w-[200px]" style={{ color: ACCENT }}>
               {activeConv?.title || t.chatNewChat}
             </span>
           </div>
@@ -274,9 +279,10 @@ export default function ChatPage() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowModelPicker(!showModelPicker)}
-                className="flex items-center gap-2 text-xs bg-black/40 border border-green-900/30 rounded-lg px-3 py-2 text-gray-300 hover:border-green-500/30 transition-colors"
+                className="flex items-center gap-2 text-xs bg-black/40 rounded-lg px-3 py-2 text-gray-300 transition-colors"
+                style={{ border: '1px solid rgba(255,255,255,0.08)' }}
               >
-                <Bot size={14} className="text-green-400" />
+                <Bot size={14} style={{ color: ACCENT }} />
                 {fuseMode
                   ? (fuseModels.length > 0
                     ? (lang === 'bn' ? `${fuseModels.length}টি মডেল নির্বাচিত` : `${fuseModels.length} models selected`)
@@ -293,9 +299,10 @@ export default function ChatPage() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.97 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-10 w-72 glass border border-green-900/30 rounded-xl overflow-hidden z-50 shadow-2xl origin-top-right"
+                  className="absolute right-0 top-10 w-72 glass rounded-xl overflow-hidden z-50 shadow-2xl origin-top-right"
+                  style={{ border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <div className="p-2 border-b border-green-900/20">
+                  <div className="p-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-xs text-gray-500 px-2">
                       {fuseMode
                         ? (lang === 'bn' ? `${MIN_FUSE_MODELS}-${MAX_FUSE_MODELS}টি মডেল বাছাই করুন` : `Pick ${MIN_FUSE_MODELS}-${MAX_FUSE_MODELS} models to fuse`)
@@ -311,7 +318,7 @@ export default function ChatPage() {
                           onClick={() => fuseMode ? toggleFuseModel(m.id) : (setSelectedModel(m.id), setShowModelPicker(false))}
                           className={cn(
                             'w-full text-left px-3 py-2.5 flex items-center justify-between hover:bg-white/5 transition-colors',
-                            isSelected && (fuseMode ? 'bg-purple-500/10 text-purple-300' : 'bg-green-500/10 text-green-300')
+                            isSelected && (fuseMode ? 'bg-purple-500/10 text-purple-300' : 'text-white')
                           )}
                         >
                           <div>
@@ -321,7 +328,7 @@ export default function ChatPage() {
                               {!fuseMode && m.id === AUTO_MODEL_ID && (lang === 'bn' ? ' · অটো fallback' : ' · Auto fallback')}
                             </div>
                           </div>
-                          {isSelected && <div className={cn('w-2 h-2 rounded-full', fuseMode ? 'bg-purple-400' : 'bg-green-400')} />}
+                          {isSelected && <div className="w-2 h-2 rounded-full" style={{ background: fuseMode ? '#A855F7' : ACCENT }} />}
                         </button>
                       )
                     })}
@@ -349,7 +356,7 @@ export default function ChatPage() {
               >
                 🤖
               </motion.div>
-              <h2 className="text-xl font-bold text-green-400 mb-2">{t.chatWelcome}</h2>
+              <h2 className="text-xl font-bold mb-2" style={{ color: ACCENT }}>{t.chatWelcome}</h2>
               <p className="text-gray-500 text-sm max-w-sm">{t.chatWelcomeSub}</p>
               <div className="grid grid-cols-2 gap-3 mt-6 max-w-sm w-full">
                 {[t.chatPrompt1, t.chatPrompt2, t.chatPrompt3, t.chatPrompt4].map((s, i) => (
@@ -361,7 +368,8 @@ export default function ChatPage() {
                     whileHover={{ scale: 1.03, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setInput(s)}
-                    className="text-left text-xs bg-green-900/20 border border-green-900/30 rounded-lg px-3 py-2.5 text-gray-400 hover:text-green-300 hover:border-green-500/30 transition-colors"
+                    className="text-left text-xs rounded-lg px-3 py-2.5 text-gray-400 transition-colors hover:text-white"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
                   >
                     {s}
                   </motion.button>
@@ -379,7 +387,7 @@ export default function ChatPage() {
               transition={{ duration: 0.28, ease: 'easeOut' }}
               className={cn('flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
               {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-1 border border-green-500/30">
+                <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-1" style={{ border: `1px solid ${ACCENT}30` }}>
                   <img src="/ai-avatar.jpg" alt="AI" className="w-full h-full object-cover" />
                 </div>
               )}
@@ -402,7 +410,7 @@ export default function ChatPage() {
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-600">{formatDate(msg.created_at)}</span>
-                    <button onClick={() => copyToClipboard(msg.content)} className="text-gray-600 hover:text-green-400 transition-colors">
+                    <button onClick={() => copyToClipboard(msg.content)} className="text-gray-600 transition-colors hover:opacity-100" style={{ color: '#6b7280' }} onMouseOver={e => { (e.target as HTMLElement).style.color = ACCENT }} onMouseOut={e => { (e.target as HTMLElement).style.color = '#6b7280' }}>
                       <Copy size={12} />
                     </button>
                   </div>
@@ -451,7 +459,7 @@ export default function ChatPage() {
               exit={{ opacity: 0, y: -6 }}
               className="flex gap-3"
             >
-              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-green-500/30">
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0" style={{ border: `1px solid ${ACCENT}30` }}>
                 <img src="/ai-avatar.jpg" alt="AI" className="w-full h-full object-cover" />
               </div>
               <div className={cn('message-ai px-4 py-3', consultingText && 'gradient-border')}>
@@ -471,7 +479,7 @@ export default function ChatPage() {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-green-900/20 glass-light shrink-0">
+        <div className="p-4 glass-light shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           {!conversationId && (
             <p className="text-xs text-gray-600 text-center mb-2">মেসেজ পাঠালে নতুন চ্যাট শুরু হবে</p>
           )}
@@ -495,7 +503,10 @@ export default function ChatPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={1}
-                className="w-full bg-black/60 border border-green-900/30 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/40 resize-none transition-colors text-sm"
+                className="w-full bg-black/60 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-600 focus:outline-none resize-none transition-colors text-sm"
+                style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                onFocus={e => { e.target.style.borderColor = `${ACCENT}40` }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)' }}
                 placeholder={t.chatPlaceholder}
                 style={{ maxHeight: '120px', height: 'auto' }}
                 onInput={e => {
@@ -510,7 +521,8 @@ export default function ChatPage() {
               whileTap={{ scale: input.trim() && !sending ? 0.92 : 1 }}
               onClick={sendMessage}
               disabled={!input.trim() || sending || (fuseMode && fuseModels.length < MIN_FUSE_MODELS)}
-              className="btn-green p-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+              className="p-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed shrink-0 text-black font-semibold"
+              style={{ background: `linear-gradient(135deg, ${ACCENT}, #059669)` }}
             >
               {sending
                 ? <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />

@@ -3,6 +3,9 @@ import { chatApi, audioApi } from '../lib/api'
 import { useLang } from '../contexts/LanguageContext'
 import { Mic, Square, Loader2, Volume2 } from 'lucide-react'
 import { cn } from '../lib/utils'
+import FeatureHeader from '../components/FeatureHeader'
+
+const ACCENT = '#3B82F6'
 
 type Status = 'idle' | 'listening' | 'processing' | 'speaking'
 
@@ -106,15 +109,10 @@ export default function VoicePage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6 flex flex-col">
+    <div className="h-full flex flex-col">
+      <FeatureHeader icon={Mic} title={t.voiceTitle} subtitle={t.voiceSubtitle} accent={ACCENT} />
+      <div className="flex-1 overflow-y-auto p-4 md:p-5 flex flex-col">
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col">
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
-            <Mic className="text-green-400" size={24} />
-            {t.voiceTitle}
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">{t.voiceSubtitle}</p>
-        </div>
 
         <div className="flex-1 space-y-4 mb-6 overflow-y-auto">
           {turns.length === 0 ? (
@@ -123,7 +121,7 @@ export default function VoicePage() {
             </div>
           ) : (
             turns.map((turn, i) => (
-              <div key={i} className={cn('rounded-xl p-4 max-w-[85%]', turn.role === 'user' ? 'ml-auto bg-green-500/10 border border-green-500/20' : 'bg-black/40 border border-green-900/20')}>
+              <div key={i} className={cn('rounded-xl p-4 max-w-[85%]', turn.role === 'user' ? 'ml-auto' : '')}>
                 <p className="text-xs text-gray-500 mb-1">{turn.role === 'user' ? t.voiceTranscriptLabel : t.voiceResponseLabel}</p>
                 <p className="text-gray-200 text-sm">{turn.text}</p>
               </div>
@@ -139,15 +137,20 @@ export default function VoicePage() {
             disabled={status === 'processing' || status === 'speaking'}
             className={cn(
               'w-20 h-20 rounded-full flex items-center justify-center transition-all disabled:opacity-40',
-              status === 'listening' ? 'bg-red-500/20 border-2 border-red-500 animate-pulse' : 'bg-green-500/20 border-2 border-green-500 hover:bg-green-500/30'
+              status === 'listening' ? 'animate-pulse' : ''
             )}
-          >
+          style={{
+            width: 80, height: 80, borderRadius: '50%', border: `2px solid`,
+            borderColor: status === 'listening' ? '#EF4444' : status === 'idle' ? ACCENT : '#64748B',
+            background: status === 'listening' ? 'rgba(239,68,68,0.12)' : `${ACCENT}12`,
+            boxShadow: status === 'listening' ? '0 0 20px rgba(239,68,68,0.3)' : status === 'idle' ? `0 0 20px ${ACCENT}30` : 'none',
+          }}>
             {status === 'processing' || status === 'speaking' ? (
-              <Loader2 size={28} className="text-green-400 animate-spin" />
+              <Loader2 size={28} style={{ color: ACCENT }} className="animate-spin" />
             ) : status === 'listening' ? (
-              <Square size={24} className="text-red-400" />
+              <Square size={24} style={{ color: '#EF4444' }} />
             ) : (
-              <Mic size={28} className="text-green-400" />
+              <Mic size={28} style={{ color: ACCENT }} />
             )}
           </button>
           <p className="text-sm text-gray-500 flex items-center gap-1.5">
@@ -159,6 +162,7 @@ export default function VoicePage() {
         </div>
 
         <audio ref={audioRef} className="hidden" />
+      </div>
       </div>
     </div>
   )

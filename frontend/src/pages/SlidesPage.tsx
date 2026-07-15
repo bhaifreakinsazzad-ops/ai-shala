@@ -4,6 +4,9 @@ import { useAuth } from '../contexts/AuthContext'
 import { useLang } from '../contexts/LanguageContext'
 import { Link } from 'react-router-dom'
 import { Presentation, FileText, Download, RefreshCw, Lock } from 'lucide-react'
+import FeatureHeader from '../components/FeatureHeader'
+
+const ACCENT = '#F97316'
 
 const SLIDE_COUNT_OPTIONS = [5, 8, 10, 12]
 
@@ -58,31 +61,15 @@ export default function SlidesPage() {
   const canGenerate = user?.subscription !== 'free' || (user.daily_usage || 0) < (user.daily_limit || 50)
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6">
+    <div className="h-full flex flex-col">
+      <FeatureHeader
+        icon={Presentation}
+        title={t.slidesTitle}
+        subtitle={t.slidesSubtitle}
+        accent={ACCENT}
+      />
+      <div className="flex-1 overflow-y-auto p-4 md:p-5">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Presentation className="text-green-400" size={24} />
-            {t.slidesTitle}
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">{t.slidesSubtitle}</p>
-        </div>
-
-        {user?.subscription === 'free' && (
-          <div className="glass-light rounded-xl p-4 mb-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-300">
-                {user.daily_usage}/{user.daily_limit}
-              </p>
-              <div className="h-1 bg-gray-800 rounded-full w-40 mt-2">
-                <div className="h-full bg-green-500 rounded-full" style={{ width: `${((user.daily_usage || 0) / (user.daily_limit || 50)) * 100}%` }} />
-              </div>
-            </div>
-            <Link to="/payment" className="text-xs text-green-400 border border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-500/10 transition-colors">
-              →
-            </Link>
-          </div>
-        )}
 
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="space-y-5">
@@ -90,7 +77,7 @@ export default function SlidesPage() {
               <button
                 onClick={() => setFormat('slides')}
                 className={`flex-1 py-2.5 px-3 rounded-lg border text-sm flex items-center justify-center gap-2 transition-all ${
-                  format === 'slides' ? 'border-green-500/50 bg-green-500/10 text-green-300' : 'border-green-900/20 text-gray-500 hover:border-green-900/40'
+                  format === 'slides' ? 'border-orange-500/50 bg-orange-500/10 text-orange-300' : 'border-white/6 text-slate-500 hover:border-white/12'
                 }`}
               >
                 <Presentation size={16} /> .pptx
@@ -98,7 +85,7 @@ export default function SlidesPage() {
               <button
                 onClick={() => setFormat('document')}
                 className={`flex-1 py-2.5 px-3 rounded-lg border text-sm flex items-center justify-center gap-2 transition-all ${
-                  format === 'document' ? 'border-green-500/50 bg-green-500/10 text-green-300' : 'border-green-900/20 text-gray-500 hover:border-green-900/40'
+                  format === 'document' ? 'border-orange-500/50 bg-orange-500/10 text-orange-300' : 'border-white/6 text-slate-500 hover:border-white/12'
                 }`}
               >
                 <FileText size={16} /> .docx
@@ -125,8 +112,8 @@ export default function SlidesPage() {
                       onClick={() => setSlideCount(n)}
                       className={`flex-1 py-2 px-3 rounded-lg border text-sm transition-all ${
                         slideCount === n
-                          ? 'border-green-500/50 bg-green-500/10 text-green-300'
-                          : 'border-green-900/20 text-gray-500 hover:border-green-900/40'
+                          ? 'border-orange-500/50 bg-orange-500/10 text-orange-300'
+                          : 'border-white/6 text-slate-500 hover:border-white/12'
                       }`}
                     >
                       {n}
@@ -141,7 +128,8 @@ export default function SlidesPage() {
             <button
               onClick={generate}
               disabled={!topic.trim() || generating || !canGenerate}
-              className="btn-green w-full py-3 flex items-center justify-center gap-2 disabled:opacity-40"
+              className="w-full py-3 flex items-center justify-center gap-2 disabled:opacity-40 rounded-xl font-semibold text-sm transition-all text-white"
+              style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)', boxShadow: '0 0 20px rgba(249,115,22,0.25)' }}
             >
               {generating ? (
                 <><RefreshCw size={18} className="animate-spin" /> {t.slidesGenerating}</>
@@ -234,6 +222,7 @@ export default function SlidesPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

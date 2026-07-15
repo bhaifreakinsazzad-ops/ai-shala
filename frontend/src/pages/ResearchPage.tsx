@@ -5,6 +5,9 @@ import { useLang } from '../contexts/LanguageContext'
 import { Link } from 'react-router-dom'
 import { BrainCircuit, RefreshCw, Lock, ExternalLink } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import FeatureHeader from '../components/FeatureHeader'
+
+const ACCENT = '#06B6D4'
 
 export default function ResearchPage() {
   const { user, refreshUser } = useAuth()
@@ -43,22 +46,17 @@ export default function ResearchPage() {
   const canGenerate = user?.subscription !== 'free' || (user.daily_usage || 0) < (user.daily_limit || 50)
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6">
+    <div className="h-full flex flex-col">
+      <FeatureHeader icon={BrainCircuit} title={t.researchTitle} subtitle={t.researchSubtitle} accent={ACCENT} />
+      <div className="flex-1 overflow-y-auto p-4 md:p-5">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <BrainCircuit className="text-green-400" size={24} />
-            {t.researchTitle}
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">{t.researchSubtitle}</p>
-        </div>
 
         {user?.subscription === 'free' && (
-          <div className="glass-light rounded-xl p-4 mb-6 flex items-center justify-between">
+          <div className="rounded-xl p-3 mb-4 flex items-center justify-between" style={{ background: `${ACCENT}08`, border: `1px solid ${ACCENT}18` }}>
             <div>
-              <p className="text-sm text-gray-300">{user.daily_usage}/{user.daily_limit}</p>
-              <div className="h-1 bg-gray-800 rounded-full w-40 mt-2">
-                <div className="h-full bg-green-500 rounded-full" style={{ width: `${((user.daily_usage || 0) / (user.daily_limit || 50)) * 100}%` }} />
+              <p className="text-[12px]" style={{ color: ACCENT }}>{user.daily_usage}/{user.daily_limit}</p>
+              <div className="h-1 rounded-full w-32 mt-1.5" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="h-full rounded-full" style={{ width: `${((user.daily_usage || 0) / (user.daily_limit || 50)) * 100}%`, background: ACCENT }} />
               </div>
             </div>
             <Link to="/payment" className="text-xs text-green-400 border border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-500/10 transition-colors">→</Link>
@@ -155,6 +153,7 @@ export default function ResearchPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

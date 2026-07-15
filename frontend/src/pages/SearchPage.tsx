@@ -3,7 +3,10 @@ import { searchApi } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useLang } from '../contexts/LanguageContext'
 import { Link } from 'react-router-dom'
-import { Globe, RefreshCw, Lock, ExternalLink } from 'lucide-react'
+import { Globe, RefreshCw, Lock, ExternalLink, Search } from 'lucide-react'
+import FeatureHeader from '../components/FeatureHeader'
+
+const ACCENT = '#EAB308'
 
 export default function SearchPage() {
   const { user, refreshUser } = useAuth()
@@ -46,7 +49,9 @@ export default function SearchPage() {
   const canSearch = user?.subscription !== 'free' || (user.daily_usage || 0) < (user.daily_limit || 50)
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6">
+    <div className="h-full flex flex-col">
+      <FeatureHeader icon={Search} title={t.searchTitle} subtitle={t.searchSubtitle} accent={ACCENT} />
+      <div className="flex-1 overflow-y-auto p-4 md:p-5">
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -144,6 +149,7 @@ export default function SearchPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )
