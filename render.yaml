@@ -42,6 +42,12 @@ services:
         sync: false
       - key: TAVILY_API_KEY
         sync: false
+      - key: FRONTEND_URL
+        value: https://meet-yusra.online
+      - key: RENDER_EXTERNAL_URL
+        value: https://yusra-synthetic-intelligence.onrender.com
+      - key: ALLOWED_ORIGINS
+        value: https://meet-yusra.online,https://www.meet-yusra.online,https://yusra-synthetic-intelligence.onrender.com
       - key: PAYMENT_PHONE
         value: "01778307704"
       - key: ADMIN_EMAILS

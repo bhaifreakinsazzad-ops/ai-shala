@@ -52,6 +52,8 @@ app.use(cors({
     if (!origin) return cb(null, true);
     if (config.allowedOrigins.includes(origin)) return cb(null, true);
     if (origin.endsWith('.vercel.app')) return cb(null, true);
+    if (origin.endsWith('.onrender.com')) return cb(null, true);
+    if (origin === 'https://meet-yusra.online' || origin === 'https://www.meet-yusra.online') return cb(null, true);
     return cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
