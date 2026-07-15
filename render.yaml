@@ -12,8 +12,11 @@ services:
         value: production
       - key: JWT_SECRET
         sync: false
+      # SUPABASE_URL is the public project URL (sent to browsers anyway, not a secret).
+      # Baked in as a value so it can't be set wrong — a wrong-but-valid URL boots the
+      # server then fails on the first DB call with a column-not-found error (see HANDOVER §9).
       - key: SUPABASE_URL
-        sync: false
+        value: https://zjpnehwcpfcpmlcthnld.supabase.co
       - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: GROQ_API_KEY
