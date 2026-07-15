@@ -12,6 +12,15 @@
 
 require('dotenv').config();
 
+// Render's container network resolves Supabase's dual-stack *.supabase.co
+// hostnames to an IPv6 address it can't actually route egress traffic to,
+// so undici's fetch hangs on the IPv6 attempt before falling back to IPv4 —
+// manifesting as "TypeError: fetch failed" after ~30-45s. Forcing IPv4-first
+// resolution avoids the doomed attempt entirely. Must run before any module
+// (e.g. middleware/auth, which builds the Supabase client at load time)
+// performs its first DNS lookup.
+require('dns').setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
